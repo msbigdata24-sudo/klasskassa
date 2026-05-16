@@ -43,7 +43,18 @@ export default async function ClassesListPage() {
               >
                 <span className="font-semibold text-stone-900">{c.name}</span>
                 <p className="mt-1 text-sm text-stone-600">
-                  {c._count.members} родителей · {c._count.collections} сборов
+                  {c._count.members}{" "}
+                  {c._count.members === 1
+                    ? "родитель"
+                    : c._count.members >= 2 && c._count.members <= 4
+                      ? "родителя"
+                      : "родителей"}{" "}
+                  · {c._count.collections}{" "}
+                  {c._count.collections === 1
+                    ? "сбор"
+                    : c._count.collections >= 2 && c._count.collections <= 4
+                      ? "сбора"
+                      : "сборов"}
                 </p>
               </Link>
             </li>
