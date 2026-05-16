@@ -1,0 +1,30 @@
+services:
+  - type: web
+    name: klasskassa-web
+    env: node
+    plan: starter
+    # One script so Render “custom build command” can run: npm install --include=dev && npm run build:render
+    buildCommand: npm install --include=dev && npm run build:render
+    startCommand: npm run start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: DATABASE_URL
+        sync: false
+      - key: SESSION_SECRET
+        sync: false
+      # Опционально: сброс пароля (SMTP, напр. Яндекс/Mail.ru) + публичный URL в ссылке
+      # - key: APP_BASE_URL
+      #   value: https://myapelsin.com
+      # - key: SMTP_HOST
+      #   value: smtp.yandex.ru
+      # - key: SMTP_PORT
+      #   value: "465"
+      # - key: SMTP_SECURE
+      #   value: "true"
+      # - key: SMTP_USER
+      #   sync: false
+      # - key: SMTP_PASSWORD
+      #   sync: false
+      # - key: MAIL_FROM
+      #   value: "Апельсин <robot@yourdomain.ru>"

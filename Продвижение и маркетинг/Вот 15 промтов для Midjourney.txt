@@ -1,0 +1,84 @@
+Вот 15 промтов для Midjourney (версия 6/6.1), разбитых по сериям. Стиль — единый: минималистичная, чистая эстетика, апельсиновая палитра (оранжевый, белый, тёплый свет), плоская 3D-иллюстрация или рендер с лёгкой тактильной текстурой.
+
+Все промты на английском (Midjourney лучше понимает), но ты можешь добавить в конце --style raw или --stylize 200 по вкусу.
+
+🍊 СЕРИЯ 1: ТИЗЕРЫ
+Промт 1.0 — один чек, много людей
+
+text
+a single restaurant check on a wooden table, surrounded by blurred figures of friends, warm orange glow, minimalist 3D render, soft shadows, an orange slice hovering above the check, clean composition, bright background, cinematic lighting --ar 9:16 --v 6
+Промт 1.1 — выжатый апельсин (визуальная метафора)
+
+text
+a tired person holding a half-squeezed dried orange peel, looking exhausted, soft pastel background, desaturated orange and white tones, sad but gentle expression, vector illustration style, smooth lighting, metaphor for financial stress --ar 9:16 --v 6
+Промт 1.2 — апельсин раскрывается на дольки
+
+text
+an orange opening like a blooming flower, with separate orange segments floating in the air, white background with soft orange gradient, realistic 3D render, sharp details, fresh summer vibe, clean and minimal --ar 9:16 --v 6
+🧾 СЕРИЯ 2: КАК ЭТО РАБОТАЕТ
+Промт 2.0 — рука с телефоном, интерфейс
+
+text
+a hand holding a smartphone, screen shows orange themed expense splitting app interface, floating orange slice next to the phone, soft white background, clean UI mockup, warm sunlight, 3D isometric illustration --ar 9:16 --v 6
+Промт 2.1 — долг перелетает долькой
+
+text
+a cartoon orange slice flying from one person to another, two simplified characters facing each other, minimal background, orange and cream color palette, soft shadows, flat 3D style, friendly and clear --ar 9:16 --v 6
+Промт 2.2 — уведомление
+
+text
+a smartphone showing a push notification "You owe 240₽", an orange slice rests next to the phone, dark mode background with orange neon accents, clean, modern, slightly glowing --ar 9:16 --v 6
+🧡 СЕРИЯ 3: АПЕЛЬСИНОВЫЙ СЛОВАРЬ
+Промт 3.0 — «апельсинить»
+
+text
+two friends talking casually, one holds an orange, the other nods, speech bubble with an orange icon, warm pastel orange background, soft 3D illustration style, friendly atmosphere, no stress --ar 9:16 --v 6
+Промт 3.1 — выжатый апельсин VS сочный апельсин
+
+text
+split screen, left side: a wrinkled dry orange peel with sad face, right side: a fresh juicy orange smiling, bright light from right side, dark desaturated left, vibrant right, metaphor for transformation --ar 9:16 --v 6
+Промт 3.2 — угостить долькой
+
+text
+one orange slice detaches from a full orange and floats towards another person’s hand, soft gradient background, golden light, gesture of offering, minimal 3D render, heartwarming --ar 9:16 --v 6
+📸 СЕРИЯ 4: UGC-ШАБЛОН
+Промт 4.0 — человек с телефоном и чеком
+
+text
+a young person holding a receipt in one hand and a smartphone with orange app interface in the other, smiling, clean bright background, soft shadows, 3D illustration, orange accents, friendly and modern --ar 9:16 --v 6
+Промт 4.1 — шаблон «я делю с помощью Апельсина»
+
+text
+empty polaroid style frame with orange border, orange slices scattered around, white background, text placeholder for user generated content, clean mockup, simple, bright, inviting --ar 9:16 --v 6
+🔁 СЕРИЯ 5: СРАВНЕНИЕ
+Промт 5.0 — блокнот против телефона
+
+text
+split screen, left: crumpled notebook with crossed out calculations and stressed hand, right: smartphone showing orange app with clean numbers, warm light on right, cold on left, metaphor for smart expense tracking --ar 9:16 --v 6
+Промт 5.1 — «10 минут против 10 секунд»
+
+text
+two hourglasses, left one dark and heavy with many sand grains (10 minutes), right one bright orange and fast (10 seconds), minimal background, 3D render, contrast of stress vs ease --ar 9:16 --v 6
+🎁 СЕРИЯ 6: ПРИЗЫВ
+Промт 6.0 — QR-код в апельсине
+
+text
+an orange fruit with a glowing QR code subtly visible on its peel, floating in space, dark background with orange rays of light, futuristic yet warm, high detail, magical atmosphere --ar 9:16 --v 6
+Промт 6.1 — App Store и Google Play кнопки
+
+text
+two floating round buttons with Apple App Store and Google Play icons inside orange slices, soft white background, clean 3D render, gentle shadows, inviting composition, center aligned --ar 9:16 --v 6
+🧠 Дополнительные параметры (на все промты)
+Если хочешь более плоскую графику (как у современного брендинга), добавь в конец:
+
+text
+--style raw --stylize 100
+Если хочешь более фотореалистичный продукт:
+
+text
+--stylize 300
+🖼️ Для Telegram-карточек (квадрат 1:1)
+Все те же промты, но замени --ar 9:16 на --ar 1:1. Например:
+
+text
+an orange opening like a blooming flower, with separate orange segments floating in the air, white background, soft orange gradient, realistic 3D render, clean composition --ar 1:1 --v 6

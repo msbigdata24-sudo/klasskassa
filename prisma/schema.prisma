@@ -1,0 +1,121 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum ClassMemberRole {
+  COMMITTEE
+  PARENT
+}
+
+model User {
+  id                  String               @id @default(cuid())
+  email               String               @unique
+  name                String
+  passwordHash        String
+  createdAt           DateTime             @default(now())
+  updatedAt           DateTime             @updatedAt
+  memberships         ClassMember[]
+  collectionsCreated  Collection[]         @relation("CollectionCreator")
+  contributions       Contribution[]
+  markedContributions Contribution[]       @relation("ContributionMarkedBy")
+  passwordResetTokens PasswordResetToken[]
+  activityEvents      ActivityEvent[]
+}
+
+model PasswordResetToken {
+  id        String    @id @default(cuid())
+  userId    String
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tokenHash String    @unique
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  @@index([userId])
+}
+
+model SchoolClass {
+  id           String        @id @default(cuid())
+  name         String
+  inviteCode   String        @unique @default(cuid())
+  inviteActive Boolean       @default(true)
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+  members      ClassMember[]
+  collections  Collection[]
+  activityEvents ActivityEvent[]
+
+  @@map("school_classes")
+}
+
+model ClassMember {
+  id      String          @id @default(cuid())
+  classId String
+  userId  String
+  role    ClassMemberRole @default(PARENT)
+  class   SchoolClass     @relation(fields: [classId], references: [id], onDelete: Cascade)
+  user    User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([classId, userId])
+  @@map("class_members")
+}
+
+model Collection {
+  id               String         @id @default(cuid())
+  classId          String
+  title            String
+  description      String         @default("")
+  amountCents      Int
+  deadline         DateTime?
+  publicReportCode String         @unique @default(cuid())
+  createdById      String
+  createdAt        DateTime       @default(now())
+  updatedAt        DateTime       @updatedAt
+  class            SchoolClass    @relation(fields: [classId], references: [id], onDelete: Cascade)
+  creator          User           @relation("CollectionCreator", fields: [createdById], references: [id])
+  contributions    Contribution[]
+
+  @@index([classId, createdAt])
+  @@map("collections")
+}
+
+model Contribution {
+  id             String     @id @default(cuid())
+  collectionId   String
+  userId         String
+  isPaid         Boolean    @default(false) @map("is_paid")
+  markedByParent Boolean    @default(false) @map("marked_by_parent")
+  markedByUserId String?    @map("marked_by_user_id")
+  receiptUrl     String?    @map("receipt_url")
+  paidAt         DateTime?  @map("paid_at")
+  comment        String     @default("")
+  createdAt      DateTime   @default(now()) @map("created_at")
+  updatedAt      DateTime   @updatedAt @map("updated_at")
+  collection     Collection @relation(fields: [collectionId], references: [id], onDelete: Cascade)
+  user           User       @relation(fields: [userId], references: [id])
+  markedBy       User?      @relation("ContributionMarkedBy", fields: [markedByUserId], references: [id], onDelete: SetNull)
+
+  @@unique([collectionId, userId])
+  @@index([collectionId, isPaid])
+  @@map("contributions")
+}
+
+model ActivityEvent {
+  id        String       @id @default(cuid())
+  classId   String?
+  actorId   String?
+  kind      String
+  text      String
+  metadata  Json?
+  createdAt DateTime     @default(now())
+  class     SchoolClass? @relation(fields: [classId], references: [id], onDelete: Cascade)
+  actor     User?        @relation(fields: [actorId], references: [id], onDelete: SetNull)
+
+  @@index([classId, createdAt])
+  @@index([actorId, createdAt])
+}

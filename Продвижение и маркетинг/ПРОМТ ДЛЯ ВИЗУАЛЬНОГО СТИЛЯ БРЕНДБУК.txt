@@ -1,0 +1,43 @@
+ПРОМТ ДЛЯ ВИЗУАЛЬНОГО СТИЛЯ БРЕНДБУКА «АПЕЛЬСИН»
+Результат: коллаж-плашка, показывающая цвета, фактуры, типографику, апельсиновые элементы. Можно использовать как обложку брендбука или тизер "стиля".
+
+Промт (скопируй в Midjourney):
+
+text
+brand guidelines mood board for "Apelsin" expense splitting app, color palette: fresh orange (#FF8C42), cream white (#FFF7ED), soft beige (#F4E4C1), accent dark orange (#E65C1E), layout with orange slices, gradient swatches, sans-serif typography samples (modern rounded), soft 3D elements, smartphone UI mockup with orange theme, clean minimal composition, warm sunlight, isometric view, white background with orange shadow frames, behance style presentation, 4k, ultra detailed --ar 16:9 --v 6
+Альтернативный вариант (вертикальный, для сторис/обложки Telegram):
+
+text
+aesthetic brand style tile for "Apelsin" fintech app, orange and cream color palette, includes: orange fruit cross-section, color swatches (#FF8C42 #F4E4C1 #FFFFFF #E65C1E), soft round sans-serif text "Apelsin", floating orange slices, clean 3D icons, warm cozy lighting, minimalist, apple keynote style, blank space for text, high quality --ar 9:16 --v 6
+🍊 ПРОМТЫ ДЛЯ ФАВИКОНА (favicon 512×512)
+Для favicon важно: квадрат, простота, узнаваемость даже в 32×32 пикселя.
+
+Промт 1 — минималистичная долька
+
+text
+a single orange slice, minimal flat vector, bright orange background, no shadows, no text, centered, round corners, thick clean outline, 2D illustration, pixel perfect, 512x512 --ar 1:1 --v 6
+Промт 2 — целый апельсин с одной отделённой долькой (символ дележа)
+
+text
+minimal icon of an orange fruit with one segment slightly separated, cream background, flat 2.5D style, soft drop shadow, no text, centered, pastel orange palette, modern logo style, 512x512 --ar 1:1 --v 6
+Промт 3 — буква "А" внутри апельсина
+
+text
+letter "A" inside a simple orange fruit shape, minimal flat vector, white and orange, transparent background feel, clean, modern, no extra text, round icon, app store style, 512x512 --ar 1:1 --v 6
+🧠 КАК ИСПОЛЬЗОВАТЬ (коротко)
+Скопируй любой промт
+
+Вставь в Midjourney / DALL-E / Kandinsky
+
+Для favicon — скачай результат и обрежь до квадрата (или сохрани как есть)
+
+Для брендбука — используй как обложку или разворот "визуальный язык"
+
+📦 ЕСЛИ ХОЧЕШЬ ПОЛНОСТЬЮ ГОТОВЫЙ БРЕНДБУК
+Я не могу нарисовать, но могу:
+
+Написать текст брендбука (миссия, тон голоса, цвета, типографика, паттерны, иконки)
+
+Сделать промты для каждой страницы брендбука (обложка, цвета, графика, UI-примеры)
+
+Собрать всё в Markdown / Notion / PDF-шаблон

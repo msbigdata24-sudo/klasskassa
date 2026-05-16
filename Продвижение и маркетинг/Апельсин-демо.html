@@ -1,0 +1,678 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Апельсин — демо (без установки)</title>
+  <style>
+    :root {
+      --peel: #ff8a3d;
+      --rind: #e85d04;
+      --pulp: #fff4ec;
+      --ink: #1c1917;
+      --muted: #78716c;
+      --card: #ffffff;
+      --line: rgba(28, 25, 23, 0.12);
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      background: var(--pulp);
+      color: var(--ink);
+      line-height: 1.45;
+      min-height: 100vh;
+    }
+    .wrap {
+      max-width: 34rem;
+      margin: 0 auto;
+      padding: 1.25rem 1rem 2.5rem;
+    }
+    header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.75rem;
+      margin-bottom: 1.5rem;
+    }
+    .logo {
+      font-weight: 700;
+      font-size: 1.15rem;
+      color: var(--rind);
+      text-decoration: none;
+    }
+    .badge {
+      font-size: 0.7rem;
+      font-weight: 600;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--peel);
+    }
+    h1 {
+      font-size: 1.5rem;
+      margin: 0 0 0.35rem;
+    }
+    h2 {
+      font-size: 0.75rem;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--peel);
+      margin: 0 0 0.5rem;
+    }
+    p.lead { color: var(--muted); font-size: 0.95rem; margin: 0 0 1rem; }
+    .card {
+      background: var(--card);
+      border-radius: 1rem;
+      padding: 1rem 1.1rem;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.06);
+      border: 1px solid var(--line);
+      margin-bottom: 0.85rem;
+    }
+    label { display: block; font-size: 0.85rem; color: var(--muted); margin-bottom: 0.2rem; }
+    input[type="text"], input[type="number"], select {
+      width: 100%;
+      padding: 0.55rem 0.65rem;
+      border-radius: 0.65rem;
+      border: 1px solid #d6d3d1;
+      font: inherit;
+      margin-bottom: 0.65rem;
+    }
+    input:focus, select:focus {
+      outline: 2px solid rgba(255, 138, 61, 0.45);
+      border-color: var(--peel);
+    }
+    .row { display: flex; gap: 0.5rem; flex-wrap: wrap; align-items: flex-end; }
+    .row > * { flex: 1; min-width: 8rem; }
+    button, .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border: none;
+      border-radius: 0.75rem;
+      padding: 0.55rem 0.9rem;
+      font: inherit;
+      font-weight: 600;
+      font-size: 0.9rem;
+      cursor: pointer;
+      text-decoration: none;
+      background: var(--peel);
+      color: #fff;
+    }
+    button.secondary, .btn.secondary {
+      background: #fff;
+      color: var(--ink);
+      border: 1px solid #d6d3d1;
+    }
+    button.danger { background: #b91c1c; }
+    button:disabled { opacity: 0.55; cursor: not-allowed; }
+    ul.plain { list-style: none; padding: 0; margin: 0; }
+    ul.plain li {
+      padding: 0.65rem 0.75rem;
+      border-radius: 0.65rem;
+      border: 1px solid var(--line);
+      margin-bottom: 0.45rem;
+      background: rgba(255, 244, 236, 0.55);
+    }
+    .muted { color: var(--muted); font-size: 0.8rem; }
+    .pos { color: #15803d; font-weight: 700; }
+    .neg { color: #b91c1c; font-weight: 700; }
+    .zero { color: var(--muted); font-weight: 600; }
+    .hint { font-size: 0.72rem; color: var(--muted); margin-top: 0.35rem; }
+    .chk { display: flex; align-items: center; gap: 0.45rem; margin: 0.25rem 0; font-size: 0.9rem; }
+    .top-actions { display: flex; gap: 0.5rem; flex-wrap: wrap; margin-top: 0.75rem; }
+    .banner {
+      font-size: 0.78rem;
+      color: var(--muted);
+      background: rgba(255,255,255,0.75);
+      border: 1px dashed var(--line);
+      border-radius: 0.65rem;
+      padding: 0.55rem 0.65rem;
+      margin-bottom: 1rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <a class="logo" href="#" id="link-home">Апельсин</a>
+      <span class="badge">демо</span>
+    </header>
+    <div id="root"></div>
+  </div>
+
+  <script>
+(function () {
+  "use strict";
+
+  var STORAGE_KEY = "apelsin-demo-v1";
+
+  function uid() {
+    if (window.crypto && crypto.randomUUID) return crypto.randomUUID();
+    return "id-" + Math.random().toString(36).slice(2, 10);
+  }
+
+  function loadState() {
+    try {
+      var raw = localStorage.getItem(STORAGE_KEY);
+      if (!raw) return { groups: [] };
+      var d = JSON.parse(raw);
+      if (!d || !Array.isArray(d.groups)) return { groups: [] };
+      d.groups.forEach(function (g) {
+        if (!Array.isArray(g.settlements)) g.settlements = [];
+        if (!Array.isArray(g.expenses)) g.expenses = [];
+        if (!Array.isArray(g.members)) g.members = [];
+        g.expenses.forEach(function (e) {
+          if (!e.createdAt) e.createdAt = new Date().toISOString();
+        });
+      });
+      return d;
+    } catch (e) {
+      return { groups: [] };
+    }
+  }
+
+  function saveState(state) {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+  }
+
+  function formatMoney(cents) {
+    var v = cents / 100;
+    try {
+      return v.toLocaleString("ru-RU", { style: "currency", currency: "RUB", minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    } catch (e) {
+      return v.toFixed(2) + " ₽";
+    }
+  }
+
+  function parseAmount(str) {
+    var t = String(str || "").trim().replace(/\s/g, "").replace(",", ".");
+    if (!/^\d+(\.\d{1,2})?$/.test(t)) return null;
+    var parts = t.split(".");
+    var whole = parts[0];
+    var frac = (parts[1] || "") + "00";
+    frac = frac.slice(0, 2);
+    var cents = parseInt(whole, 10) * 100 + parseInt(frac, 10);
+    if (!isFinite(cents) || cents <= 0) return null;
+    return cents;
+  }
+
+  function equalSplit(totalCents, userIds) {
+    var sorted = userIds.slice().sort();
+    var n = sorted.length;
+    if (n === 0) throw new Error("Нужен хотя бы один участник");
+    var base = Math.floor(totalCents / n);
+    var rem = totalCents % n;
+    return sorted.map(function (id, i) {
+      return { userId: id, shareCents: base + (i < rem ? 1 : 0) };
+    });
+  }
+
+  /** Баланс только из трат (как раньше). */
+  function computeNetFromExpenses(expenses) {
+    var net = {};
+    function add(id, d) {
+      net[id] = (net[id] || 0) + d;
+    }
+    (expenses || []).forEach(function (e) {
+      add(e.payerId, e.amountCents);
+      e.splits.forEach(function (s) {
+        add(s.userId, -s.shareCents);
+      });
+    });
+    return net;
+  }
+
+  /**
+   * Погашение: «from перевёл to сумму» (реальный перевод СБП/наличными).
+   * from перестаёт быть должником, to — кредитором на эту сумму.
+   */
+  function applySettlements(net, settlements) {
+    (settlements || []).forEach(function (s) {
+      if (!s.fromUserId || !s.toUserId || !s.amountCents) return;
+      net[s.fromUserId] = (net[s.fromUserId] || 0) + s.amountCents;
+      net[s.toUserId] = (net[s.toUserId] || 0) - s.amountCents;
+    });
+    return net;
+  }
+
+  function combinedNet(g) {
+    var net = computeNetFromExpenses(g.expenses);
+    applySettlements(net, g.settlements);
+    (g.members || []).forEach(function (m) {
+      if (net[m.id] == null) net[m.id] = 0;
+    });
+    return net;
+  }
+
+  function formatWhen(iso) {
+    try {
+      var d = new Date(iso);
+      if (isNaN(d.getTime())) return String(iso || "");
+      return d.toLocaleString("ru-RU", { dateStyle: "medium", timeStyle: "short" });
+    } catch (err) {
+      return String(iso || "");
+    }
+  }
+
+  function todayInputDate() {
+    var d = new Date();
+    var y = d.getFullYear();
+    var mo = String(d.getMonth() + 1).padStart(2, "0");
+    var da = String(d.getDate()).padStart(2, "0");
+    return y + "-" + mo + "-" + da;
+  }
+
+  function dateInputToIso(dateStr) {
+    if (!dateStr || !/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) return new Date().toISOString();
+    return dateStr + "T12:00:00.000Z";
+  }
+
+  function buildJournal(g) {
+    var items = [];
+    (g.expenses || []).forEach(function (e) {
+      items.push({ kind: "expense", at: e.createdAt || new Date().toISOString(), data: e });
+    });
+    (g.settlements || []).forEach(function (s) {
+      items.push({ kind: "settlement", at: s.settledAt || new Date().toISOString(), data: s });
+    });
+    items.sort(function (a, b) {
+      return Date.parse(b.at) - Date.parse(a.at);
+    });
+    return items;
+  }
+
+  function simplifyDebts(netMap, memberIds) {
+    var debtors = [];
+    var creditors = [];
+    memberIds.forEach(function (id) {
+      var v = netMap[id] || 0;
+      if (v < 0) debtors.push({ id: id, owe: -v });
+      else if (v > 0) creditors.push({ id: id, receive: v });
+    });
+    debtors.sort(function (a, b) { return b.owe - a.owe; });
+    creditors.sort(function (a, b) { return b.receive - a.receive; });
+    var out = [];
+    var i = 0, j = 0;
+    while (i < debtors.length && j < creditors.length) {
+      var pay = Math.min(debtors[i].owe, creditors[j].receive);
+      if (pay > 0) out.push({ from: debtors[i].id, to: creditors[j].id, cents: pay });
+      debtors[i].owe -= pay;
+      creditors[j].receive -= pay;
+      if (debtors[i].owe <= 0) i++;
+      if (creditors[j].receive <= 0) j++;
+    }
+    return out;
+  }
+
+  function nameById(group, id) {
+    var m = group.members.find(function (x) { return x.id === id; });
+    return m ? m.name : id;
+  }
+
+  var state = loadState();
+  var view = { screen: "home", groupId: null };
+
+  function el(tag, attrs, children) {
+    var e = document.createElement(tag);
+    if (attrs) Object.keys(attrs).forEach(function (k) {
+      if (k === "class") e.className = attrs[k];
+      else if (k === "html") e.innerHTML = attrs[k];
+      else if (k.slice(0, 2) === "on" && typeof attrs[k] === "function") e.addEventListener(k.slice(2), attrs[k]);
+      else e.setAttribute(k, attrs[k]);
+    });
+    (children || []).forEach(function (c) {
+      if (c != null) e.appendChild(typeof c === "string" ? document.createTextNode(c) : c);
+    });
+    return e;
+  }
+
+  function render() {
+    var root = document.getElementById("root");
+    root.innerHTML = "";
+
+    if (view.screen === "home") {
+      root.appendChild(el("div", { class: "card" }, [
+        el("p", { class: "badge", html: "без программиста" }),
+        el("h1", null, ["Всё по долькам"]),
+        el("p", { class: "lead", html: "Это <strong>один файл</strong> — двойной щелчок открывает его в браузере. Работает офлайн. Данные хранятся только в этом браузере на этом компьютере (localStorage)." }),
+        el("div", { class: "banner", html: "Есть <strong>погашения</strong> с датой, общая <strong>история</strong> и кнопка <strong>«Скачать все данные (.json)»</strong> на экране групп — копия лежит у вас на диске, не на сервере." }),
+        el("div", { class: "top-actions" }, [
+          el("button", { type: "button", onclick: function () { view.screen = "groups"; view.groupId = null; render(); } }, ["Мои группы"]),
+        ]),
+      ]));
+      return;
+    }
+
+    if (view.screen === "groups") {
+      var addCard = el("div", { class: "card" }, [
+        el("h2", null, ["Новая группа"]),
+        el("label", null, ["Название"]),
+        (function () {
+          var inp = el("input", { type: "text", placeholder: "Поездка, ужин, квартира…" });
+          var btn = el("button", { type: "button", onclick: function () {
+            var name = inp.value.trim();
+            if (!name) return alert("Введите название");
+            state.groups.push({
+              id: uid(),
+              name: name,
+              members: [],
+              expenses: [],
+              settlements: [],
+            });
+            saveState(state);
+            inp.value = "";
+            render();
+          }}, ["Создать"]);
+          return el("div", null, [inp, btn]);
+        })(),
+      ]);
+
+      var list = el("div", { class: "card" }, [
+        el("h2", null, ["Группы"]),
+      ]);
+      if (state.groups.length === 0) {
+        list.appendChild(el("p", { class: "muted", html: "Пока пусто — создайте первую группу выше." }));
+      } else {
+        var ul = el("ul", { class: "plain" });
+        state.groups.forEach(function (g) {
+          var li = el("li", null, []);
+          li.appendChild(el("strong", null, [g.name]));
+          li.appendChild(el("div", { class: "muted", html: (g.members.length || 0) + " участников · " + (g.expenses.length || 0) + " расходов · " + ((g.settlements && g.settlements.length) || 0) + " погашений" }));
+          li.style.cursor = "pointer";
+          li.onclick = function () {
+            view.screen = "group";
+            view.groupId = g.id;
+            render();
+          };
+          ul.appendChild(li);
+        });
+        list.appendChild(ul);
+      }
+
+      root.appendChild(el("button", { type: "button", class: "secondary", onclick: function () { view.screen = "home"; render(); }, html: "← На главную" }));
+      root.appendChild(addCard);
+      root.appendChild(list);
+      root.appendChild(el("div", { class: "top-actions" }, [
+        el("button", {
+          type: "button",
+          class: "secondary",
+          onclick: function () {
+            var blob = new Blob([JSON.stringify(state, null, 2)], { type: "application/json;charset=utf-8" });
+            var a = document.createElement("a");
+            a.href = URL.createObjectURL(blob);
+            a.download = "apelsin-dannye-" + todayInputDate() + ".json";
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(a.href);
+          },
+        }, ["Скачать все данные (файл .json на ваш ПК)"]),
+        el("button", { type: "button", class: "danger", onclick: function () {
+          if (!confirm("Стереть все демо-данные в этом браузере?")) return;
+          state = { groups: [] };
+          saveState(state);
+          render();
+        }}, ["Сбросить демо-данные"]),
+      ]));
+      return;
+    }
+
+    if (view.screen === "group") {
+      var g = state.groups.find(function (x) { return x.id === view.groupId; });
+      if (!g) {
+        view.screen = "groups";
+        view.groupId = null;
+        render();
+        return;
+      }
+
+      var memberIds = g.members.map(function (m) { return m.id; });
+      var net = combinedNet(g);
+      var sug = simplifyDebts(net, memberIds);
+
+      root.appendChild(el("button", { type: "button", class: "secondary", onclick: function () { view.screen = "groups"; view.groupId = null; render(); }, html: "← Все группы" }));
+
+      root.appendChild(el("div", { class: "card" }, [
+        el("h1", null, [g.name]),
+        el("p", { class: "muted", html: "Валюта для отображения: RUB" }),
+      ]));
+
+      root.appendChild(el("div", { class: "card" }, [
+        el("h2", null, ["Баланс по людям"]),
+        el("p", { class: "hint", html: "Плюс — ему должны вернуть. Минус — он должен доплатить." }),
+        (function () {
+          var rows = memberIds.map(function (id) {
+            return { id: id, cents: net[id] || 0, name: nameById(g, id) };
+          }).sort(function (a, b) { return b.cents - a.cents; });
+          var ul = el("ul", { class: "plain" });
+          rows.forEach(function (r) {
+            var li = el("li", null, []);
+            var line = el("div", { style: "display:flex;justify-content:space-between;gap:0.5rem;flex-wrap:wrap;" }, []);
+            line.appendChild(el("span", null, [r.name]));
+            var span = el("span", null, [formatMoney(r.cents)]);
+            span.className = r.cents > 0 ? "pos" : r.cents < 0 ? "neg" : "zero";
+            line.appendChild(span);
+            li.appendChild(line);
+            var hint = r.cents === 0 ? "В нуле." : r.cents > 0 ? "Переплатил свою долю." : "Недоплатил свою долю.";
+            li.appendChild(el("div", { class: "hint", html: hint }));
+            ul.appendChild(li);
+          });
+          return ul;
+        })(),
+      ]));
+
+      root.appendChild(el("div", { class: "card" }, [
+        el("h2", null, ["Кто кому перевести"]),
+        el("p", { class: "hint", html: "Минимум переводов при тех же долгах." }),
+        sug.length === 0
+          ? el("p", { class: "muted", html: memberIds.length < 2 ? "Добавьте хотя бы двух участников и расходы." : "Пока все в нуле." })
+          : (function () {
+              var ul = el("ul", { class: "plain" });
+              sug.forEach(function (s) {
+                var li = el("li", null, [
+                  el("strong", null, [nameById(g, s.from)]),
+                  document.createTextNode(" → "),
+                  el("strong", null, [nameById(g, s.to)]),
+                  document.createTextNode(" · " + formatMoney(s.cents)),
+                ]);
+                ul.appendChild(li);
+              });
+              return ul;
+            })(),
+        el("p", { class: "hint", html: "Деньги приложение не переводит — только подсказка для СБП / наличных." }),
+      ]));
+
+      root.appendChild(el("div", { class: "card" }, [
+        el("h2", null, ["Записать погашение"]),
+        el("p", { class: "hint", html: "Когда кто-то реально перевёл другому — зафиксируйте здесь (с датой). Баланс пересчитается. Это не расход на всех, а личный перевод между двумя людьми." }),
+        g.members.length < 2
+          ? el("p", { class: "muted", html: "Нужны хотя бы два участника." })
+          : (function () {
+              var fromSel = el("select", null, []);
+              var toSel = el("select", null, []);
+              g.members.forEach(function (m) {
+                fromSel.appendChild(el("option", { value: m.id, html: m.name }));
+                toSel.appendChild(el("option", { value: m.id, html: m.name }));
+              });
+              if (toSel.options.length > 1) toSel.selectedIndex = 1;
+              var amtInp = el("input", { type: "text", placeholder: "500.00" });
+              var dateInp = el("input", { type: "date", value: todayInputDate() });
+              var noteInp = el("input", { type: "text", placeholder: "Комментарий (необязательно), напр. СБП" });
+              var btn = el("button", { type: "button", onclick: function () {
+                var fromId = fromSel.value;
+                var toId = toSel.value;
+                if (fromId === toId) return alert("Выберите разных людей: кто платил и кому.");
+                var cents = parseAmount(amtInp.value);
+                if (cents == null) return alert("Введите сумму погашения, например 500 или 500.50");
+                g.settlements.unshift({
+                  id: uid(),
+                  fromUserId: fromId,
+                  toUserId: toId,
+                  amountCents: cents,
+                  settledAt: dateInputToIso(dateInp.value),
+                  note: noteInp.value.trim() || "",
+                });
+                saveState(state);
+                amtInp.value = "";
+                noteInp.value = "";
+                dateInp.value = todayInputDate();
+                render();
+              }}, ["Сохранить погашение"]);
+              return el("div", { class: "row", style: "flex-direction:column;align-items:stretch;" }, [
+                el("label", { html: "Кто перевёл" }),
+                fromSel,
+                el("label", { html: "Кому" }),
+                toSel,
+                el("label", { html: "Сумма (₽)" }),
+                amtInp,
+                el("label", { html: "Дата погашения" }),
+                dateInp,
+                el("label", { html: "Комментарий" }),
+                noteInp,
+                btn,
+              ]);
+            })(),
+      ]));
+
+      root.appendChild(el("div", { class: "card" }, [
+        el("h2", null, ["Участники"]),
+        g.members.length === 0
+          ? el("p", { class: "muted", html: "Добавьте людей по имени (для демо email не нужен)." })
+          : el("ul", { class: "plain" }, g.members.map(function (m) {
+              return el("li", null, [el("strong", null, [m.name])]);
+            })),
+        el("label", { html: "Имя нового участника" }),
+        (function () {
+          var inp = el("input", { type: "text", placeholder: "Например, Оля" });
+          var btn = el("button", { type: "button", onclick: function () {
+            var name = inp.value.trim();
+            if (!name) return;
+            g.members.push({ id: uid(), name: name });
+            saveState(state);
+            inp.value = "";
+            render();
+          }}, ["Добавить"]);
+          return el("div", null, [inp, btn]);
+        })(),
+      ]));
+
+      root.appendChild(el("div", { class: "card" }, [
+        el("h2", null, ["Новый расход"]),
+        el("p", { class: "hint", html: "Поровну между отмеченными. Копейки добиваются по алфавиту id (как в полной версии — по стабильному списку)." }),
+        (function () {
+          if (g.members.length === 0) {
+            return el("p", { class: "muted", html: "Сначала добавьте участников." });
+          }
+          var titleInp = el("input", {
+            type: "text",
+            placeholder: "Например: ужин в кафе, такси до вокзала",
+            title: "Сюда — за что был платёж",
+            "aria-label": "За что платили — название расхода",
+          });
+          var amtInp = el("input", { type: "text", placeholder: "199.50" });
+          var payerSel = el("select", null, []);
+          g.members.forEach(function (m) {
+            payerSel.appendChild(el("option", { value: m.id, html: m.name }));
+          });
+          var checks = {};
+          var boxWrap = el("div", null, []);
+          g.members.forEach(function (m) {
+            checks[m.id] = true;
+            var row = el("label", { class: "chk" });
+            var cb = el("input", { type: "checkbox", checked: "checked" });
+            cb.onchange = function () { checks[m.id] = cb.checked; };
+            row.appendChild(cb);
+            row.appendChild(document.createTextNode(" " + m.name));
+            boxWrap.appendChild(row);
+          });
+          var btn = el("button", { type: "button", onclick: function () {
+            var title = titleInp.value.trim();
+            var cents = parseAmount(amtInp.value);
+            if (!title) return alert("Сначала заполните поле «1. За что платили» — например: такси, ужин.");
+            if (cents == null) return alert("Сумма в формате 199 или 199.50");
+            var payerId = payerSel.value;
+            var parts = g.members.map(function (m) { return m.id; }).filter(function (id) { return checks[id]; });
+            if (parts.length === 0) return alert("Отметьте хотя бы одного участника траты");
+            var splits;
+            try { splits = equalSplit(cents, parts); } catch (e) { return alert(e.message); }
+            g.expenses.unshift({
+              id: uid(),
+              title: title,
+              amountCents: cents,
+              payerId: payerId,
+              splits: splits,
+              createdAt: new Date().toISOString(),
+            });
+            saveState(state);
+            titleInp.value = "";
+            amtInp.value = "";
+            render();
+          }}, ["Добавить расход"]);
+
+          return el("div", null, [
+            el("label", { html: "<strong>1. За что платили</strong> — короткое название" }),
+            titleInp,
+            el("p", { class: "hint", html: "Это поле обязательно: без него кнопка «Добавить расход» покажет напоминание." }),
+            el("label", { html: "<strong>2. Сумма</strong> (₽)" }),
+            amtInp,
+            el("label", { html: "<strong>3. Кто платил</strong>" }),
+            payerSel,
+            el("label", { html: "<strong>4. Делим поровну между</strong> (галочки)" }),
+            boxWrap,
+            btn,
+          ]);
+        })(),
+      ]));
+
+      root.appendChild(el("div", { class: "card" }, [
+        el("h2", null, ["История"]),
+        el("p", { class: "hint", html: "Расходы и погашения в одной ленте по дате. Хранится в браузере (localStorage) и дублируется в файле, если вы нажали «Скачать все данные» на экране групп." }),
+        (function () {
+          var journal = buildJournal(g);
+          if (journal.length === 0) {
+            return el("p", { class: "muted", html: "Пока нет записей." });
+          }
+          return el("ul", { class: "plain" }, journal.map(function (row) {
+            var li = el("li", null, []);
+            if (row.kind === "expense") {
+              var e = row.data;
+              li.appendChild(el("div", { class: "muted", html: formatWhen(e.createdAt) + " · расход" }));
+              li.appendChild(el("div", { style: "display:flex;justify-content:space-between;gap:0.5rem;flex-wrap:wrap;margin-top:0.25rem;" }, [
+                el("strong", null, [e.title]),
+                el("span", null, [formatMoney(e.amountCents)]),
+              ]));
+              var parts = e.splits.map(function (s) {
+                return nameById(g, s.userId) + " " + formatMoney(s.shareCents);
+              }).join(" · ");
+              li.appendChild(el("div", { class: "hint", html: "Платил: " + nameById(g, e.payerId) + " · дольки: " + parts }));
+            } else {
+              var s = row.data;
+              li.appendChild(el("div", { class: "muted", html: formatWhen(s.settledAt) + " · погашение" }));
+              li.appendChild(el("div", { style: "display:flex;justify-content:space-between;gap:0.5rem;flex-wrap:wrap;margin-top:0.25rem;" }, [
+                el("strong", null, [nameById(g, s.fromUserId) + " → " + nameById(g, s.toUserId)]),
+                el("span", { class: "pos", html: formatMoney(s.amountCents) }),
+              ]));
+              if (s.note) li.appendChild(el("div", { class: "hint", html: s.note }));
+            }
+            return li;
+          }));
+        })(),
+      ]));
+
+      return;
+    }
+  }
+
+  document.getElementById("link-home").onclick = function (ev) {
+    ev.preventDefault();
+    view.screen = "home";
+    view.groupId = null;
+    render();
+  };
+
+  render();
+})();
+  </script>
+</body>
+</html>
