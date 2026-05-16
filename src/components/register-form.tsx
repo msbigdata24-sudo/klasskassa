@@ -7,7 +7,7 @@ import { useState } from "react";
 export function RegisterForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const next = searchParams.get("next") ?? "/welcome";
+  const next = searchParams.get("next") ?? "/classes/new";
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -34,7 +34,7 @@ export function RegisterForm() {
         setError(typeof data.error === "string" ? data.error : "Не удалось зарегистрироваться");
         return;
       }
-      router.push(next.startsWith("/") ? next : "/welcome");
+      router.push(next.startsWith("/") ? next : "/classes");
       router.refresh();
     } finally {
       setLoading(false);

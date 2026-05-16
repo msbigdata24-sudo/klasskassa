@@ -6,7 +6,7 @@ import { useEffect, useState } from "react";
 export function LoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const next = searchParams.get("next") ?? "/welcome";
+  const next = searchParams.get("next") ?? "/classes";
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -33,7 +33,7 @@ export function LoginForm() {
         setError(typeof data.error === "string" ? data.error : "Не удалось войти");
         return;
       }
-      router.push(next.startsWith("/") ? next : "/welcome");
+      router.push(next.startsWith("/") ? next : "/classes");
       router.refresh();
     } finally {
       setLoading(false);
