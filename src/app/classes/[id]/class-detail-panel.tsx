@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { formatRub } from "@/lib/money";
+import { SupportEventPing } from "@/components/support-events";
 
 type Member = { id: string; name: string; email: string | null; isGuest: boolean; role: string };
 type Collection = {
@@ -186,6 +187,20 @@ export function ClassDetailPanel({
             ))}
           </ul>
         )}
+      </section>
+
+      <section className="rounded-2xl bg-brandLight p-4 ring-1 ring-brand/20">
+        <SupportEventPing event="DONATE_BLOCK_VIEWED_CLASS" location="class_detail" classId={classId} />
+        <h2 className="font-semibold text-brandDark">Поддержать КлассКассу</h2>
+        <p className="mt-1 text-sm text-stone-600">
+          Сервис бесплатен на старте. Если он сэкономил время родкому, можно поддержать разработку любой суммой.
+        </p>
+        <Link
+          href="/support"
+          className="mt-3 inline-flex min-h-10 items-center justify-center rounded-xl bg-white px-4 py-2 text-sm font-semibold text-brandDark ring-1 ring-brand/30 hover:bg-brandLight"
+        >
+          Открыть QR и ссылку Ozon
+        </Link>
       </section>
 
       <section className="rounded-2xl bg-white p-4 shadow-sm ring-1 ring-stone-200/80">

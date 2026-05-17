@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { SupportEventPing } from "@/components/support-events";
 import { getCurrentUser } from "@/lib/auth";
 
 function PrimaryCta({ href, label }: { href: string; label: string }) {
@@ -129,6 +130,23 @@ export default async function HomePage() {
           «Организовали выпускной за 3 дня без 500 сообщений в чате. Родители сами отмечают оплату — это гениально.»
         </p>
         <p className="mt-3 text-sm font-medium text-brandDark">— Мария, родком 9«А»</p>
+      </section>
+
+      {/* Support */}
+      <section className="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-stone-200/80">
+        <SupportEventPing event="DONATE_BLOCK_VIEWED_HOME" location="home" />
+        <p className="text-sm font-medium uppercase tracking-wide text-brand">Поддержать проект</p>
+        <h2 className="mt-2 text-xl font-bold text-stone-900">КлассКасса бесплатна на старте</h2>
+        <p className="mt-2 text-sm text-stone-600">
+          Если сервис помог вашему классу убрать хаос из чата и таблиц, поддержите разработку любой суммой через Ozon
+          Bank. Это добровольная поддержка, не оплата школьного сбора.
+        </p>
+        <Link
+          href="/support"
+          className="mt-4 inline-flex min-h-11 items-center justify-center rounded-xl border-2 border-brand/30 px-5 py-2.5 text-sm font-semibold text-brandDark hover:border-brand hover:bg-brandLight"
+        >
+          Поддержать КлассКассу
+        </Link>
       </section>
 
       {/* Features */}

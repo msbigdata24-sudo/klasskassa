@@ -55,6 +55,9 @@ export default async function RootLayout({
                 <Link href="/contacts" className="hover:text-brand">
                   Контакты
                 </Link>
+                <Link href="/support" className="hover:text-brand">
+                  Поддержать проект
+                </Link>
               </div>
               <p className="mt-2 text-stone-400">
                 © 2026 КлассКасса · Учёт родительских взносов · Не является платёжной системой
