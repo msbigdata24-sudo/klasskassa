@@ -37,7 +37,7 @@ export function CollectionPanel({
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [targetUserId, setTargetUserId] = useState(currentUserId);
-  const [expandedReceiptId, setExpandedReceiptId] = useState<string | null>(null);
+  const [openReceipt, setOpenReceipt] = useState<{ url: string; name: string } | null>(null);
 
   const mine = contributions.find((c) => c.userId === currentUserId);
 
@@ -96,6 +96,10 @@ export function CollectionPanel({
     return /\.(png|jpe?g|webp|gif)(\?.*)?$/i.test(url);
   }
 
+  function receiptViewUrl(url: string) {
+    return url.replace(/^\/uploads\/receipts\//, "/api/receipts/");
+  }
+
   return (
     <div className="flex flex-col gap-6">
       <section className="rounded-2xl bg-brandLight p-4 ring-1 ring-brand/20">
@@ -110,7 +114,7 @@ export function CollectionPanel({
           </a>
         </p>
         <a href={exportUrl} className="mt-3 inline-block text-sm font-medium text-brand underline">
-          Скачать Excel (CSV)
+          Скачать Excel
         </a>
       </section>
 
@@ -135,9 +139,13 @@ export function CollectionPanel({
               </button>
             </div>
           ) : mine.receiptUrl ? (
-            <a href={mine.receiptUrl} target="_blank" rel="noreferrer" className="mt-2 inline-block text-sm text-brand underline">
+            <button
+              type="button"
+              className="mt-2 inline-block text-sm text-brand underline"
+              onClick={() => setOpenReceipt({ url: receiptViewUrl(mine.receiptUrl!), name: mine.name })}
+            >
               Открыть чек
-            </a>
+            </button>
           ) : null}
         </section>
       ) : null}
@@ -159,9 +167,9 @@ export function CollectionPanel({
                   <button
                     type="button"
                     className="text-xs font-medium text-brand underline"
-                    onClick={() => setExpandedReceiptId(expandedReceiptId === c.id ? null : c.id)}
+                    onClick={() => setOpenReceipt({ url: receiptViewUrl(c.receiptUrl!), name: c.name })}
                   >
-                    {expandedReceiptId === c.id ? "Скрыть чек" : "Показать чек"}
+                    Показать чек
                   </button>
                 ) : null}
                 {isCommittee ? (
@@ -172,19 +180,6 @@ export function CollectionPanel({
                   >
                     снять отметку
                   </button>
-                ) : null}
-                {expandedReceiptId === c.id && c.receiptUrl ? (
-                  <div className="basis-full pt-2">
-                    {isImageReceipt(c.receiptUrl) ? (
-                      <a href={c.receiptUrl} target="_blank" rel="noreferrer" className="block">
-                        <img src={c.receiptUrl} alt={`Чек: ${c.name}`} className="max-h-96 rounded-xl border border-stone-200 object-contain" />
-                      </a>
-                    ) : (
-                      <a href={c.receiptUrl} target="_blank" rel="noreferrer" className="text-sm text-brand underline">
-                        Открыть чек
-                      </a>
-                    )}
-                  </div>
                 ) : null}
               </li>
             ))}
@@ -238,6 +233,26 @@ export function CollectionPanel({
       ) : null}
 
       {error ? <p className="text-sm text-red-600">{error}</p> : null}
+
+      {openReceipt ? (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4" role="dialog" aria-modal="true">
+          <div className="flex max-h-[92vh] w-full max-w-3xl flex-col rounded-2xl bg-white p-4 shadow-xl">
+            <div className="mb-3 flex items-center justify-between gap-3">
+              <h2 className="font-semibold text-stone-900">Чек: {openReceipt.name}</h2>
+              <button type="button" className="rounded-lg border border-stone-300 px-3 py-1 text-sm" onClick={() => setOpenReceipt(null)}>
+                Закрыть
+              </button>
+            </div>
+            <div className="overflow-auto rounded-xl bg-stone-50 p-2">
+              {isImageReceipt(openReceipt.url) ? (
+                <img src={openReceipt.url} alt={`Чек: ${openReceipt.name}`} className="mx-auto max-h-[75vh] max-w-full object-contain" />
+              ) : (
+                <iframe src={openReceipt.url} title={`Чек: ${openReceipt.name}`} className="h-[75vh] w-full rounded-lg bg-white" />
+              )}
+            </div>
+          </div>
+        </div>
+      ) : null}
     </div>
   );
 }

@@ -5,21 +5,31 @@ import { prisma } from "@/lib/prisma";
 
 type Params = { params: Promise<{ id: string }> };
 
-function csvCell(value: string | number | null | undefined) {
-  const text = String(value ?? "");
-  return `"${text.replaceAll('"', '""')}"`;
-}
-
-function csvRow(values: (string | number | null | undefined)[]) {
-  return values.map(csvCell).join(";");
-}
-
 function safeFilenamePart(value: string) {
   return value
     .trim()
     .replace(/[\\/:*?"<>|]+/g, " ")
     .replace(/\s+/g, " ")
     .slice(0, 40);
+}
+
+function htmlCell(value: string | number | null | undefined, tag: "td" | "th" = "td") {
+  const text = String(value ?? "")
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;");
+  return `<${tag}>${text}</${tag}>`;
+}
+
+function htmlRow(values: (string | number | null | undefined)[], tag: "td" | "th" = "td") {
+  return `<tr>${values.map((value) => htmlCell(value, tag)).join("")}</tr>`;
+}
+
+function receiptExportUrl(req: Request, url: string | null) {
+  if (!url) return "";
+  const normalized = url.replace(/^\/uploads\/receipts\//, "/api/receipts/");
+  return new URL(normalized, req.url).toString();
 }
 
 export async function GET(req: Request, { params }: Params) {
@@ -53,32 +63,46 @@ export async function GET(req: Request, { params }: Params) {
     .filter(Boolean)
     .join(" - ");
 
-  const lines = [
-    "sep=;",
-    csvRow(["Класс", collection.class.name]),
-    csvRow(["Сбор", collection.title]),
-    csvRow(["Дата выгрузки", exportDate]),
-    csvRow([]),
-    csvRow(["Родитель", "Email", "Сумма взноса", "Статус оплаты", "Дата оплаты", "Кто отметил", "Чек URL", "Комментарий"]),
+  const rows = [
+    htmlRow(["Класс", collection.class.name]),
+    htmlRow(["Сбор", collection.title]),
+    htmlRow(["Дата выгрузки", exportDate]),
+    htmlRow([""]),
+    htmlRow(["Родитель", "Email", "Сумма взноса", "Статус оплаты", "Дата оплаты", "Кто отметил", "Чек URL", "Комментарий"], "th"),
     ...collection.contributions.map((c) =>
-      csvRow([
+      htmlRow([
         c.user.name,
         c.user.email.includes("@klasskassa.guest") ? "" : c.user.email,
         (collection.amountCents / 100).toFixed(2),
         c.isPaid && c.receiptUrl ? "Оплачено, чек есть" : c.isPaid ? "Нет чека" : "Не оплачено",
         c.paidAt?.toISOString() ?? "",
         c.markedByParent ? "родитель" : c.isPaid ? "родком" : "",
-        c.receiptUrl ?? "",
+        receiptExportUrl(req, c.receiptUrl),
         c.comment,
       ]),
     ),
   ];
 
-  return new NextResponse(`\uFEFF${lines.join("\r\n")}`, {
+  const html = `<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <style>
+    table { border-collapse: collapse; font-family: Arial, sans-serif; font-size: 12px; }
+    td, th { border: 1px solid #d9d9d9; padding: 6px 8px; vertical-align: top; }
+    th { background: #e3f2fd; font-weight: bold; }
+  </style>
+</head>
+<body>
+  <table>${rows.join("\n")}</table>
+</body>
+</html>`;
+
+  return new NextResponse(html, {
     headers: {
-      "Content-Type": "text/csv; charset=utf-8",
-      "Content-Disposition": `attachment; filename="klasskassa-export.csv"; filename*=UTF-8''${encodeURIComponent(
-        `${filename}.csv`,
+      "Content-Type": "application/vnd.ms-excel; charset=utf-8",
+      "Content-Disposition": `attachment; filename="klasskassa-export.xls"; filename*=UTF-8''${encodeURIComponent(
+        `${filename}.xls`,
       )}`,
     },
   });

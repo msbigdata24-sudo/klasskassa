@@ -30,5 +30,5 @@ export async function saveReceiptFile(file: File, collectionId: string, userId: 
   const fullPath = path.join(dir, name);
   const buffer = Buffer.from(await file.arrayBuffer());
   await writeFile(fullPath, buffer);
-  return `/uploads/receipts/${collectionId}/${name}`;
+  return `/api/receipts/${collectionId}/${name}`;
 }
