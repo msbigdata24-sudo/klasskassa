@@ -108,7 +108,7 @@ export function CollectionPanel({
           Оплатили: {paid.length} из {contributions.length}
         </p>
         <p className="mt-2 break-all text-sm text-brandDark">
-          Ссылка для WhatsApp:{" "}
+          Ссылка для чата:{" "}
           <a href={reportUrl.startsWith("http") ? reportUrl : reportUrl} className="underline" target="_blank" rel="noreferrer">
             {reportUrl}
           </a>

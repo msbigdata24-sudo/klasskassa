@@ -45,7 +45,7 @@ export default async function HomePage() {
         </div>
 
         <p className="mt-4 text-stone-600">
-          Учёт взносов в школьном классе: кто сдал, кто нет, с чеками и ссылкой для WhatsApp. Деньги переводите сами —
+          Учёт взносов в школьном классе: кто сдал, кто нет, с чеками и ссылкой для чата. Деньги переводите сами —
           сервис только фиксирует статус оплаты.
         </p>
         <p className="mt-2 text-xs text-stone-500">
@@ -78,7 +78,7 @@ export default async function HomePage() {
 
       {/* Report demo */}
       <section className="rounded-2xl bg-gradient-to-br from-brandLight to-white p-6 ring-1 ring-brand/20">
-        <h2 className="text-lg font-bold text-stone-900">Так выглядит отчёт для WhatsApp</h2>
+        <h2 className="text-lg font-bold text-stone-900">Так выглядит отчёт для чата</h2>
         <p className="mt-1 text-sm text-stone-600">
           Одна ссылка без входа — родители видят честную картину, без «а кто уже перевёл?»
         </p>

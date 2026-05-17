@@ -98,7 +98,7 @@ export function ClassDetailPanel({
     <div className="flex flex-col gap-6">
       <section className="rounded-2xl bg-white p-4 shadow-sm ring-1 ring-stone-200/80">
         <h2 className="font-semibold text-stone-900">Приглашение в класс</h2>
-        <p className="mt-1 text-sm text-stone-600">Отправьте ссылку родителям в WhatsApp</p>
+        <p className="mt-1 text-sm text-stone-600">Отправьте ссылку родителям в чат</p>
         <p className="mt-2 break-all rounded-lg bg-brandLight px-3 py-2 text-sm text-brandDark">{inviteLink}</p>
       </section>
 
