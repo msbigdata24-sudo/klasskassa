@@ -38,13 +38,17 @@ export default function SupportPage() {
         <div>
           <h2 className="text-xl font-bold text-stone-900">Поддержать через Ozon Bank</h2>
           <p className="mt-2 text-sm text-stone-600">
-            Отсканируйте QR-код или откройте ссылку. Сумму можно выбрать уже на стороне Ozon Bank.
+            Основной способ — отсканировать QR-код камерой телефона. Сумму можно выбрать уже на стороне Ozon Bank.
+          </p>
+          <p className="mt-2 text-xs text-stone-500">
+            Если вы открыли страницу с телефона, можно попробовать кнопку ниже. На компьютере прямая ссылка Ozon иногда
+            показывает ошибку, даже когда QR-код работает нормально.
           </p>
           <SupportDonateLink
             location="support_page"
             className="btn-soft-3d mt-4 inline-flex min-h-12 w-full items-center justify-center px-5 py-3 text-base font-semibold sm:w-auto"
           >
-            Открыть ссылку Ozon Bank
+            Открыть Ozon Bank с телефона
           </SupportDonateLink>
         </div>
       </section>

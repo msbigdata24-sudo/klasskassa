@@ -1,5 +1,5 @@
 export const SUPPORT_DONATION_URL =
-  "https://finance.ozon.ru/apps/sbp/ozonbankpay/019D9B19-36BF-7E1D-B35E-90B680D936A7";
+  "https://finance.ozon.ru/apps/sbp/ozonbankpay/019d9b19-36bf-7e1d-b35e-90b680d936a7";
 
 export const SUPPORT_QR_IMAGE = "/support-qr.png";
 
