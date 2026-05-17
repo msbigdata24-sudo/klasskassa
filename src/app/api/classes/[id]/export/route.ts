@@ -26,10 +26,26 @@ function htmlRow(values: (string | number | null | undefined)[], tag: "td" | "th
   return `<tr>${values.map((value) => htmlCell(value, tag)).join("")}</tr>`;
 }
 
+function publicOrigin(req: Request) {
+  const forwardedHost = req.headers.get("x-forwarded-host")?.split(",")[0]?.trim();
+  const host = forwardedHost || req.headers.get("host") || "";
+  const forwardedProto = req.headers.get("x-forwarded-proto")?.split(",")[0]?.trim();
+  const proto = forwardedProto || (host.includes("localhost") ? "http" : "https");
+
+  if (host && !host.includes("localhost") && !host.startsWith("127.0.0.1")) {
+    return `${proto}://${host}`;
+  }
+
+  const configured = process.env.APP_BASE_URL?.trim() || process.env.NEXT_PUBLIC_APP_BASE_URL?.trim();
+  if (configured && !configured.includes("localhost")) return configured.replace(/\/+$/, "");
+
+  return "https://klasskassa.onrender.com";
+}
+
 function receiptExportUrl(req: Request, url: string | null) {
   if (!url) return "";
   const normalized = url.replace(/^\/uploads\/receipts\//, "/api/receipts/");
-  return new URL(normalized, req.url).toString();
+  return new URL(normalized, publicOrigin(req)).toString();
 }
 
 export async function GET(req: Request, { params }: Params) {
