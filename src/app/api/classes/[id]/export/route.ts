@@ -90,7 +90,7 @@ export async function GET(req: Request, { params }: Params) {
         c.user.name,
         c.user.email.includes("@klasskassa.guest") ? "" : c.user.email,
         (collection.amountCents / 100).toFixed(2),
-        c.isPaid && c.receiptUrl ? "Оплачено, чек есть" : c.isPaid ? "Нет чека" : "Не оплачено",
+        c.isPaid && c.receiptUrl && c.receiptMime ? "Оплачено, чек есть" : c.isPaid ? "Чек нужно загрузить заново" : "Не оплачено",
         c.paidAt?.toISOString() ?? "",
         c.markedByParent ? "родитель" : c.isPaid ? "родком" : "",
         receiptExportUrl(req, c.receiptUrl),

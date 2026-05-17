@@ -40,6 +40,7 @@ export default async function CollectionPage({ params }: Props) {
     isPaid: c.isPaid,
     markedByParent: c.markedByParent,
     receiptUrl: c.receiptUrl,
+    receiptMime: c.receiptMime,
     paidAt: c.paidAt?.toISOString() ?? null,
     comment: c.comment,
   }));

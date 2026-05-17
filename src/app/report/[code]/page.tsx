@@ -25,6 +25,7 @@ export default async function PublicReportPage({ params }: Props) {
           markedByParent: true,
           paidAt: true,
           receiptUrl: true,
+          receiptMime: true,
           user: { select: { name: true } },
         },
       },
@@ -33,8 +34,8 @@ export default async function PublicReportPage({ params }: Props) {
 
   if (!collection) notFound();
 
-  const paid = collection.contributions.filter((c) => c.isPaid && c.receiptUrl);
-  const unpaid = collection.contributions.filter((c) => !c.isPaid || !c.receiptUrl);
+  const paid = collection.contributions.filter((c) => c.isPaid && c.receiptUrl && c.receiptMime);
+  const unpaid = collection.contributions.filter((c) => !c.isPaid || !c.receiptUrl || !c.receiptMime);
 
   return (
     <main className="mx-auto max-w-lg px-4 py-8">

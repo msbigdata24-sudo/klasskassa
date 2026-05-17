@@ -1,6 +1,7 @@
 import { readFile } from "node:fs/promises";
 import path from "node:path";
 import { NextResponse } from "next/server";
+import { prisma } from "@/lib/prisma";
 
 type Params = { params: Promise<{ collectionId: string; fileName: string }> };
 
@@ -24,6 +25,25 @@ export async function GET(_req: Request, { params }: Params) {
   const mime = MIME_BY_EXT[ext];
   if (!mime) {
     return NextResponse.json({ error: "Формат не поддерживается" }, { status: 400 });
+  }
+
+  const apiUrl = `/api/receipts/${collectionId}/${fileName}`;
+  const legacyUrl = `/uploads/receipts/${collectionId}/${fileName}`;
+  const contribution = await prisma.contribution.findFirst({
+    where: {
+      collectionId,
+      OR: [{ receiptUrl: apiUrl }, { receiptUrl: legacyUrl }, { receiptFileName: fileName }],
+    },
+    select: { receiptData: true, receiptMime: true },
+  });
+
+  if (contribution?.receiptData && contribution.receiptMime) {
+    return new NextResponse(Buffer.from(contribution.receiptData), {
+      headers: {
+        "Content-Type": contribution.receiptMime,
+        "Cache-Control": "private, max-age=3600",
+      },
+    });
   }
 
   const fullPath = path.join(process.cwd(), "public", "uploads", "receipts", collectionId, fileName);

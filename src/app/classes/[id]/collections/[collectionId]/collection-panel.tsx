@@ -11,6 +11,7 @@ type Contribution = {
   isPaid: boolean;
   markedByParent: boolean;
   receiptUrl: string | null;
+  receiptMime: string | null;
   paidAt: string | null;
   comment: string;
 };
@@ -95,8 +96,8 @@ export function CollectionPanel({
     }
   }
 
-  const paid = contributions.filter((c) => c.isPaid && c.receiptUrl);
-  const unpaid = contributions.filter((c) => !c.isPaid || !c.receiptUrl);
+  const paid = contributions.filter((c) => c.isPaid && c.receiptUrl && c.receiptMime);
+  const unpaid = contributions.filter((c) => !c.isPaid || !c.receiptUrl || !c.receiptMime);
 
   function isImageReceipt(url: string) {
     return /\.(png|jpe?g|webp|gif)(\?.*)?$/i.test(url);
@@ -145,10 +146,10 @@ export function CollectionPanel({
         <section className="rounded-2xl bg-white p-4 shadow-sm ring-1 ring-stone-200/80">
           <h2 className="font-semibold text-stone-900">Мой взнос</h2>
           <p className="mt-1 text-sm text-stone-600">
-            Статус: {mine.isPaid && mine.receiptUrl ? "оплачено, чек прикреплён" : "нужен чек для зачёта оплаты"}
+            Статус: {mine.isPaid && mine.receiptUrl && mine.receiptMime ? "оплачено, чек прикреплён" : "нужен чек для зачёта оплаты"}
             {mine.markedByParent ? " (отметили сами)" : ""}
           </p>
-          {!(mine.isPaid && mine.receiptUrl) ? (
+          {!(mine.isPaid && mine.receiptUrl && mine.receiptMime) ? (
             <div className="mt-3 flex flex-col gap-2">
               <p className="text-xs text-stone-500">Прикрепите фото или PDF чека — после этого взнос считается оплаченным.</p>
               <input ref={fileRef} type="file" accept="image/*,application/pdf" className="text-sm" />
@@ -223,7 +224,7 @@ export function CollectionPanel({
                     {c.name}
                     {c.isGuest ? " (гость)" : ""}
                   </span>
-                  <span className="text-amber-700">{c.isPaid && !c.receiptUrl ? "нет чека" : "не оплачено"}</span>
+                  <span className="text-amber-700">{c.isPaid && (!c.receiptUrl || !c.receiptMime) ? "чек нужно загрузить заново" : "не оплачено"}</span>
                 </div>
                 {isCommittee ? (
                   <div className="mt-2 flex flex-wrap gap-2">
