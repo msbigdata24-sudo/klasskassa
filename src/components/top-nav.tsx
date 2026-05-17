@@ -15,7 +15,7 @@ function isActive(pathname: string, href: string) {
   return pathname === href || pathname.startsWith(`${href}/`);
 }
 
-export function TopNav({ user }: { user: UserView | null }) {
+export function TopNav({ user, isMetricsAdmin = false }: { user: UserView | null; isMetricsAdmin?: boolean }) {
   const pathname = usePathname();
 
   const linkClass = (href: string) => {
@@ -35,6 +35,11 @@ export function TopNav({ user }: { user: UserView | null }) {
           <Link className={linkClass("/classes")} href="/classes">
             Классы
           </Link>
+          {isMetricsAdmin ? (
+            <Link className={linkClass("/admin/metrics")} href="/admin/metrics">
+              Метрики
+            </Link>
+          ) : null}
           <span className="max-w-[10rem] truncate text-stone-500" title={user.email}>
             {user.name}
           </span>

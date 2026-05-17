@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist } from "next/font/google";
 import Link from "next/link";
 import { getCurrentUser } from "@/lib/auth";
+import { isMetricsAdminEmail } from "@/lib/env";
 import { CookieConsent } from "@/components/cookie-consent";
 import { TopNav } from "@/components/top-nav";
 import { ToastProvider } from "@/components/toast-provider";
@@ -31,6 +32,7 @@ export default async function RootLayout({
   children: React.ReactNode;
 }>) {
   const user = await getCurrentUser();
+  const isMetricsAdmin = user ? isMetricsAdminEmail(user.email) : false;
 
   return (
     <html lang="ru">
@@ -41,7 +43,7 @@ export default async function RootLayout({
               <Link href="/" className="text-lg font-semibold tracking-tight text-brandDark">
                 КлассКасса
               </Link>
-              <TopNav user={user} />
+              <TopNav user={user} isMetricsAdmin={isMetricsAdmin} />
             </header>
             {children}
             <footer className="mt-8 border-t border-stone-200 pt-4 text-xs text-stone-500">
