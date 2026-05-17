@@ -96,7 +96,7 @@ export function CollectionPanel({
       <section className="rounded-2xl bg-brandLight p-4 ring-1 ring-brand/20">
         <h2 className="font-semibold text-brandDark">Статус оплаты</h2>
         <p className="mt-1 text-2xl font-bold text-stone-900">
-          {paid.length} / {contributions.length} сдали
+          Оплатили: {paid.length} из {contributions.length}
         </p>
         <p className="mt-2 break-all text-sm text-brandDark">
           Ссылка для WhatsApp:{" "}
