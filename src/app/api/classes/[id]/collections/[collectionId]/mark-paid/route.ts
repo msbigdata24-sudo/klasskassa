@@ -54,6 +54,13 @@ export async function POST(req: Request, { params }: Params) {
   }
 
   const markPaid = parsed.data.isPaid !== false;
+  if (markPaid) {
+    return NextResponse.json(
+      { error: "Чтобы засчитать взнос, прикрепите чек. Отметка без чека больше не используется." },
+      { status: 400 },
+    );
+  }
+
   const markedByParent = markPaid && targetUserId === user.id && !isCommittee;
 
   const updated = await prisma.contribution.update({

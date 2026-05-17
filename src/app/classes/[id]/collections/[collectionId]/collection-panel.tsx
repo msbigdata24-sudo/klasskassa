@@ -37,6 +37,7 @@ export function CollectionPanel({
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [targetUserId, setTargetUserId] = useState(currentUserId);
+  const [expandedReceiptId, setExpandedReceiptId] = useState<string | null>(null);
 
   const mine = contributions.find((c) => c.userId === currentUserId);
 
@@ -88,8 +89,12 @@ export function CollectionPanel({
     }
   }
 
-  const paid = contributions.filter((c) => c.isPaid);
-  const unpaid = contributions.filter((c) => !c.isPaid);
+  const paid = contributions.filter((c) => c.isPaid && c.receiptUrl);
+  const unpaid = contributions.filter((c) => !c.isPaid || !c.receiptUrl);
+
+  function isImageReceipt(url: string) {
+    return /\.(png|jpe?g|webp|gif)(\?.*)?$/i.test(url);
+  }
 
   return (
     <div className="flex flex-col gap-6">
@@ -113,19 +118,12 @@ export function CollectionPanel({
         <section className="rounded-2xl bg-white p-4 shadow-sm ring-1 ring-stone-200/80">
           <h2 className="font-semibold text-stone-900">Мой взнос</h2>
           <p className="mt-1 text-sm text-stone-600">
-            Статус: {mine.isPaid ? "оплачено" : "не оплачено"}
+            Статус: {mine.isPaid && mine.receiptUrl ? "оплачено, чек прикреплён" : "нужен чек для зачёта оплаты"}
             {mine.markedByParent ? " (отметили сами)" : ""}
           </p>
-          {!mine.isPaid ? (
+          {!(mine.isPaid && mine.receiptUrl) ? (
             <div className="mt-3 flex flex-col gap-2">
-              <button
-                type="button"
-                disabled={loading}
-                onClick={() => void markPaid(currentUserId, true)}
-                className="btn-soft-3d text-sm font-semibold"
-              >
-                Я оплатил
-              </button>
+              <p className="text-xs text-stone-500">Прикрепите фото или PDF чека — после этого взнос считается оплаченным.</p>
               <input ref={fileRef} type="file" accept="image/*,application/pdf" className="text-sm" />
               <button
                 type="button"
@@ -133,7 +131,7 @@ export function CollectionPanel({
                 onClick={() => void uploadReceipt(currentUserId)}
                 className="rounded-xl border border-brand px-3 py-2 text-sm font-medium text-brandDark"
               >
-                Прикрепить чек и отметить оплату
+                Прикрепить чек и засчитать оплату
               </button>
             </div>
           ) : mine.receiptUrl ? (
@@ -157,6 +155,15 @@ export function CollectionPanel({
                   {c.isGuest ? " (гость)" : ""}
                 </span>
                 <span className="text-green-700">оплачено</span>
+                {c.receiptUrl ? (
+                  <button
+                    type="button"
+                    className="text-xs font-medium text-brand underline"
+                    onClick={() => setExpandedReceiptId(expandedReceiptId === c.id ? null : c.id)}
+                  >
+                    {expandedReceiptId === c.id ? "Скрыть чек" : "Показать чек"}
+                  </button>
+                ) : null}
                 {isCommittee ? (
                   <button
                     type="button"
@@ -165,6 +172,19 @@ export function CollectionPanel({
                   >
                     снять отметку
                   </button>
+                ) : null}
+                {expandedReceiptId === c.id && c.receiptUrl ? (
+                  <div className="basis-full pt-2">
+                    {isImageReceipt(c.receiptUrl) ? (
+                      <a href={c.receiptUrl} target="_blank" rel="noreferrer" className="block">
+                        <img src={c.receiptUrl} alt={`Чек: ${c.name}`} className="max-h-96 rounded-xl border border-stone-200 object-contain" />
+                      </a>
+                    ) : (
+                      <a href={c.receiptUrl} target="_blank" rel="noreferrer" className="text-sm text-brand underline">
+                        Открыть чек
+                      </a>
+                    )}
+                  </div>
                 ) : null}
               </li>
             ))}
@@ -185,18 +205,10 @@ export function CollectionPanel({
                     {c.name}
                     {c.isGuest ? " (гость)" : ""}
                   </span>
-                  <span className="text-amber-700">не оплачено</span>
+                  <span className="text-amber-700">{c.isPaid && !c.receiptUrl ? "нет чека" : "не оплачено"}</span>
                 </div>
                 {isCommittee ? (
                   <div className="mt-2 flex flex-wrap gap-2">
-                    <button
-                      type="button"
-                      disabled={loading}
-                      onClick={() => void markPaid(c.userId, true)}
-                      className="rounded-lg bg-brand/10 px-2 py-1 text-xs font-medium text-brandDark"
-                    >
-                      Отметить оплату
-                    </button>
                     <button
                       type="button"
                       onClick={() => {
@@ -205,7 +217,7 @@ export function CollectionPanel({
                       }}
                       className="rounded-lg border border-stone-300 px-2 py-1 text-xs"
                     >
-                      Чек за родителя
+                      Прикрепить чек
                     </button>
                   </div>
                 ) : null}
