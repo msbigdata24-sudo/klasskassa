@@ -34,7 +34,7 @@ export async function GET(_req: Request, { params }: Params) {
       collectionId,
       OR: [{ receiptUrl: apiUrl }, { receiptUrl: legacyUrl }, { receiptFileName: fileName }],
     },
-    select: { receiptData: true, receiptMime: true },
+    select: { receiptData: true, receiptMime: true, receiptDeletedAt: true },
   });
 
   if (contribution?.receiptData && contribution.receiptMime) {
@@ -44,6 +44,10 @@ export async function GET(_req: Request, { params }: Params) {
         "Cache-Control": "private, max-age=3600",
       },
     });
+  }
+
+  if (contribution?.receiptDeletedAt) {
+    return NextResponse.json({ error: "Чек удалён по сроку хранения" }, { status: 410 });
   }
 
   const fullPath = path.join(process.cwd(), "public", "uploads", "receipts", collectionId, fileName);

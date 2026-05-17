@@ -23,7 +23,19 @@ export default async function CollectionPage({ params }: Props) {
       class: { select: { name: true } },
       contributions: {
         orderBy: { user: { name: "asc" } },
-        include: { user: { select: { id: true, name: true, email: true } } },
+        select: {
+          id: true,
+          userId: true,
+          isPaid: true,
+          markedByParent: true,
+          receiptUrl: true,
+          receiptMime: true,
+          receiptStored: true,
+          receiptDeletedAt: true,
+          paidAt: true,
+          comment: true,
+          user: { select: { id: true, name: true, email: true } },
+        },
       },
     },
   });
@@ -41,6 +53,8 @@ export default async function CollectionPage({ params }: Props) {
     markedByParent: c.markedByParent,
     receiptUrl: c.receiptUrl,
     receiptMime: c.receiptMime,
+    receiptStored: c.receiptStored,
+    receiptDeletedAt: c.receiptDeletedAt?.toISOString() ?? null,
     paidAt: c.paidAt?.toISOString() ?? null,
     comment: c.comment,
   }));

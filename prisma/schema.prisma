@@ -95,6 +95,8 @@ model Contribution {
   receiptData    Bytes?     @map("receipt_data")
   receiptMime    String?    @map("receipt_mime")
   receiptFileName String?   @map("receipt_file_name")
+  receiptStored  Boolean    @default(false) @map("receipt_stored")
+  receiptDeletedAt DateTime? @map("receipt_deleted_at")
   paidAt         DateTime?  @map("paid_at")
   comment        String     @default("")
   createdAt      DateTime   @default(now()) @map("created_at")

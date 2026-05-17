@@ -26,6 +26,8 @@ export default async function PublicReportPage({ params }: Props) {
           paidAt: true,
           receiptUrl: true,
           receiptMime: true,
+          receiptStored: true,
+          receiptDeletedAt: true,
           user: { select: { name: true } },
         },
       },
@@ -34,8 +36,8 @@ export default async function PublicReportPage({ params }: Props) {
 
   if (!collection) notFound();
 
-  const paid = collection.contributions.filter((c) => c.isPaid && c.receiptUrl && c.receiptMime);
-  const unpaid = collection.contributions.filter((c) => !c.isPaid || !c.receiptUrl || !c.receiptMime);
+  const paid = collection.contributions.filter((c) => c.isPaid && (c.receiptStored || c.receiptDeletedAt));
+  const unpaid = collection.contributions.filter((c) => !c.isPaid || (!c.receiptStored && !c.receiptDeletedAt));
 
   return (
     <main className="mx-auto max-w-lg px-4 py-8">

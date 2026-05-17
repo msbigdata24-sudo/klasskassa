@@ -12,6 +12,8 @@ type Contribution = {
   markedByParent: boolean;
   receiptUrl: string | null;
   receiptMime: string | null;
+  receiptStored: boolean;
+  receiptDeletedAt: string | null;
   paidAt: string | null;
   comment: string;
 };
@@ -96,8 +98,8 @@ export function CollectionPanel({
     }
   }
 
-  const paid = contributions.filter((c) => c.isPaid && c.receiptUrl && c.receiptMime);
-  const unpaid = contributions.filter((c) => !c.isPaid || !c.receiptUrl || !c.receiptMime);
+  const paid = contributions.filter((c) => c.isPaid && ((c.receiptUrl && c.receiptMime && c.receiptStored) || c.receiptDeletedAt));
+  const unpaid = contributions.filter((c) => !c.isPaid || (!c.receiptStored && !c.receiptDeletedAt));
 
   function isImageReceipt(url: string) {
     return /\.(png|jpe?g|webp|gif)(\?.*)?$/i.test(url);
@@ -146,12 +148,19 @@ export function CollectionPanel({
         <section className="rounded-2xl bg-white p-4 shadow-sm ring-1 ring-stone-200/80">
           <h2 className="font-semibold text-stone-900">Мой взнос</h2>
           <p className="mt-1 text-sm text-stone-600">
-            Статус: {mine.isPaid && mine.receiptUrl && mine.receiptMime ? "оплачено, чек прикреплён" : "нужен чек для зачёта оплаты"}
+            Статус:{" "}
+            {mine.isPaid && mine.receiptStored
+              ? "оплачено, чек прикреплён"
+              : mine.isPaid && mine.receiptDeletedAt
+                ? "оплачено, чек удалён по сроку хранения"
+                : "нужен чек для зачёта оплаты"}
             {mine.markedByParent ? " (отметили сами)" : ""}
           </p>
-          {!(mine.isPaid && mine.receiptUrl && mine.receiptMime) ? (
+          {!(mine.isPaid && (mine.receiptStored || mine.receiptDeletedAt)) ? (
             <div className="mt-3 flex flex-col gap-2">
-              <p className="text-xs text-stone-500">Прикрепите фото или PDF чека — после этого взнос считается оплаченным.</p>
+              <p className="text-xs text-stone-500">
+                Прикрепите фото или PDF чека — после этого взнос считается оплаченным. Чеки хранятся 90 дней.
+              </p>
               <input ref={fileRef} type="file" accept="image/*,application/pdf" className="text-sm" />
               <button
                 type="button"
@@ -162,7 +171,7 @@ export function CollectionPanel({
                 Прикрепить чек и засчитать оплату
               </button>
             </div>
-          ) : mine.receiptUrl ? (
+          ) : mine.receiptStored && mine.receiptUrl ? (
             <button
               type="button"
               className="mt-2 inline-block text-sm text-brand underline"
@@ -170,6 +179,8 @@ export function CollectionPanel({
             >
               Открыть чек
             </button>
+          ) : mine.receiptDeletedAt ? (
+            <p className="mt-2 text-sm text-stone-500">Чек удалён по сроку хранения.</p>
           ) : null}
         </section>
       ) : null}
@@ -187,7 +198,7 @@ export function CollectionPanel({
                   {c.isGuest ? " (гость)" : ""}
                 </span>
                 <span className="text-green-700">оплачено</span>
-                {c.receiptUrl ? (
+                {c.receiptStored && c.receiptUrl ? (
                   <button
                     type="button"
                     className="text-xs font-medium text-brand underline"
@@ -195,6 +206,8 @@ export function CollectionPanel({
                   >
                     Показать чек
                   </button>
+                ) : c.receiptDeletedAt ? (
+                  <span className="text-xs text-stone-500">чек удалён по сроку хранения</span>
                 ) : null}
                 {isCommittee ? (
                   <button
@@ -224,7 +237,9 @@ export function CollectionPanel({
                     {c.name}
                     {c.isGuest ? " (гость)" : ""}
                   </span>
-                  <span className="text-amber-700">{c.isPaid && (!c.receiptUrl || !c.receiptMime) ? "чек нужно загрузить заново" : "не оплачено"}</span>
+                  <span className="text-amber-700">
+                    {c.isPaid && !c.receiptStored && !c.receiptDeletedAt ? "чек нужно загрузить заново" : "не оплачено"}
+                  </span>
                 </div>
                 {isCommittee ? (
                   <div className="mt-2 flex flex-wrap gap-2">

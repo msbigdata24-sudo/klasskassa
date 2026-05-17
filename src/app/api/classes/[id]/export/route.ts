@@ -67,7 +67,17 @@ export async function GET(req: Request, { params }: Params) {
     include: {
       class: { select: { name: true } },
       contributions: {
-        include: { user: { select: { name: true, email: true } } },
+        select: {
+          user: { select: { name: true, email: true } },
+          isPaid: true,
+          markedByParent: true,
+          paidAt: true,
+          receiptUrl: true,
+          receiptMime: true,
+          receiptStored: true,
+          receiptDeletedAt: true,
+          comment: true,
+        },
         orderBy: { user: { name: "asc" } },
       },
     },
@@ -90,10 +100,16 @@ export async function GET(req: Request, { params }: Params) {
         c.user.name,
         c.user.email.includes("@klasskassa.guest") ? "" : c.user.email,
         (collection.amountCents / 100).toFixed(2),
-        c.isPaid && c.receiptUrl && c.receiptMime ? "Оплачено, чек есть" : c.isPaid ? "Чек нужно загрузить заново" : "Не оплачено",
+        c.isPaid && c.receiptStored
+          ? "Оплачено, чек есть"
+          : c.isPaid && c.receiptDeletedAt
+            ? "Оплачено, чек удалён по сроку хранения"
+            : c.isPaid
+              ? "Чек нужно загрузить заново"
+              : "Не оплачено",
         c.paidAt?.toISOString() ?? "",
         c.markedByParent ? "родитель" : c.isPaid ? "родком" : "",
-        receiptExportUrl(req, c.receiptUrl),
+        c.receiptStored ? receiptExportUrl(req, c.receiptUrl) : "",
         c.comment,
       ]),
     ),
