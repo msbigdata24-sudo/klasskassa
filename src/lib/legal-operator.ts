@@ -18,8 +18,8 @@ export const OPERATOR = {
   postalAddress: "[ЗАПОЛНИТЬ: адрес для корреспонденции]",
 
   contactEmail: "msbigdata24@gmail.com",
-  telegramBetaInvite: "https://t.me/+4BGnWku5lJBkN2U6",
-  telegramBetaTitle: "Апельсин — бета-тестирование",
+  telegramBetaInvite: "https://t.me/Klasskassabot",
+  telegramBetaTitle: "@Klasskassabot",
 
   /** Текущее физическое размещение БД (бета-период). */
   dbHostingNote:
