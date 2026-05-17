@@ -30,9 +30,7 @@ export default async function CollectionPage({ params }: Props) {
   if (!collection) notFound();
 
   const isCommittee = membership.role === "COMMITTEE";
-  const baseUrl = process.env.APP_BASE_URL ?? "";
   const reportPath = `/report/${collection.publicReportCode}`;
-  const reportUrl = baseUrl ? `${baseUrl.replace(/\/$/, "")}${reportPath}` : reportPath;
 
   const contributions = collection.contributions.map((c) => ({
     id: c.id,
@@ -64,7 +62,7 @@ export default async function CollectionPage({ params }: Props) {
         collectionId={collectionId}
         isCommittee={isCommittee}
         currentUserId={user.id}
-        reportUrl={reportUrl}
+        reportUrl={reportPath}
         exportUrl={`/api/classes/${classId}/export?collectionId=${collectionId}`}
         contributions={contributions}
       />

@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 type Contribution = {
   id: string;
@@ -38,8 +38,14 @@ export function CollectionPanel({
   const [loading, setLoading] = useState(false);
   const [targetUserId, setTargetUserId] = useState(currentUserId);
   const [openReceipt, setOpenReceipt] = useState<{ url: string; name: string } | null>(null);
+  const [shareUrl, setShareUrl] = useState(reportUrl);
+  const [copiedShareUrl, setCopiedShareUrl] = useState(false);
 
   const mine = contributions.find((c) => c.userId === currentUserId);
+
+  useEffect(() => {
+    setShareUrl(reportUrl.startsWith("http") ? reportUrl : `${window.location.origin}${reportUrl}`);
+  }, [reportUrl]);
 
   async function markPaid(userId: string, isPaid: boolean) {
     setError(null);
@@ -100,6 +106,16 @@ export function CollectionPanel({
     return url.replace(/^\/uploads\/receipts\//, "/api/receipts/");
   }
 
+  async function copyShareUrl() {
+    try {
+      await navigator.clipboard.writeText(shareUrl);
+      setCopiedShareUrl(true);
+      window.setTimeout(() => setCopiedShareUrl(false), 1800);
+    } catch {
+      setError("Не удалось скопировать ссылку. Скопируйте её вручную.");
+    }
+  }
+
   return (
     <div className="flex flex-col gap-6">
       <section className="rounded-2xl bg-brandLight p-4 ring-1 ring-brand/20">
@@ -107,12 +123,19 @@ export function CollectionPanel({
         <p className="mt-1 text-2xl font-bold text-stone-900">
           Оплатили: {paid.length} из {contributions.length}
         </p>
-        <p className="mt-2 break-all text-sm text-brandDark">
-          Ссылка для чата:{" "}
-          <a href={reportUrl.startsWith("http") ? reportUrl : reportUrl} className="underline" target="_blank" rel="noreferrer">
-            {reportUrl}
+        <div className="mt-2 flex flex-col gap-2 text-sm text-brandDark sm:flex-row sm:items-center">
+          <span className="font-medium">Ссылка для чата:</span>
+          <a href={reportUrl} className="break-all underline" target="_blank" rel="noreferrer">
+            {shareUrl}
           </a>
-        </p>
+          <button
+            type="button"
+            onClick={() => void copyShareUrl()}
+            className="shrink-0 rounded-lg border border-brand/30 bg-white px-2.5 py-1 text-xs font-semibold text-brandDark hover:bg-brandLight"
+          >
+            {copiedShareUrl ? "Скопировано" : "Скопировать"}
+          </button>
+        </div>
         <a href={exportUrl} className="mt-3 inline-block text-sm font-medium text-brand underline">
           Скачать Excel
         </a>
