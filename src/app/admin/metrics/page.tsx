@@ -33,6 +33,27 @@ function metricFromGroups(groups: { kind: string; _count: { _all: number } }[], 
   return groups.find((g) => g.kind === kind)?._count._all ?? 0;
 }
 
+function asMetadata(value: unknown): { location?: unknown; classId?: unknown } {
+  return value && typeof value === "object" ? (value as { location?: unknown; classId?: unknown }) : {};
+}
+
+function metadataString(value: unknown) {
+  return typeof value === "string" && value.length > 0 ? value : null;
+}
+
+function locationLabel(location: string | null) {
+  switch (location) {
+    case "home":
+      return "главная";
+    case "class_detail":
+      return "страница класса";
+    case "support_page":
+      return "страница поддержки";
+    default:
+      return location;
+  }
+}
+
 export const metadata = {
   title: "Метрики — КлассКасса",
 };
@@ -83,6 +104,20 @@ export default async function AdminMetricsPage() {
 
   const [usersTotal, classesTotal, collectionsTotal, paidContributions, contributionsTotal] = totals;
   const paidPercent = contributionsTotal > 0 ? Math.round((paidContributions / contributionsTotal) * 100) : 0;
+  const recentClassIds = Array.from(
+    new Set(
+      recentEvents
+        .map((event) => metadataString(asMetadata(event.metadata).classId))
+        .filter((classId): classId is string => Boolean(classId)),
+    ),
+  );
+  const recentClasses = recentClassIds.length
+    ? await prisma.schoolClass.findMany({
+        where: { id: { in: recentClassIds } },
+        select: { id: true, name: true },
+      })
+    : [];
+  const classNameById = new Map(recentClasses.map((schoolClass) => [schoolClass.id, schoolClass.name]));
 
   return (
     <main className="flex flex-1 flex-col gap-6">
@@ -143,21 +178,29 @@ export default async function AdminMetricsPage() {
           <p className="mt-2 text-sm text-stone-500">Событий пока нет.</p>
         ) : (
           <ul className="mt-3 max-h-96 space-y-3 overflow-y-auto text-sm">
-            {recentEvents.map((event) => (
-              <li key={event.id} className="rounded-xl border border-stone-200 p-3">
-                <div className="flex flex-wrap justify-between gap-2">
-                  <span className="font-medium text-stone-900">
-                    {supportLabels[event.kind as (typeof supportKinds)[number]] ?? event.text}
-                  </span>
-                  <time className="text-xs text-stone-500">{fmtDate(event.createdAt)}</time>
-                </div>
-                {event.metadata ? (
-                  <pre className="mt-2 overflow-x-auto rounded-lg bg-stone-50 p-2 text-xs text-stone-600">
-                    {JSON.stringify(event.metadata, null, 2)}
-                  </pre>
-                ) : null}
-              </li>
-            ))}
+            {recentEvents.map((event) => {
+              const meta = asMetadata(event.metadata);
+              const location = locationLabel(metadataString(meta.location));
+              const classId = metadataString(meta.classId);
+              const className = classId ? (classNameById.get(classId) ?? "класс не найден") : null;
+
+              return (
+                <li key={event.id} className="rounded-xl border border-stone-200 p-3">
+                  <div className="flex flex-wrap justify-between gap-2">
+                    <span className="font-medium text-stone-900">
+                      {supportLabels[event.kind as (typeof supportKinds)[number]] ?? event.text}
+                    </span>
+                    <time className="text-xs text-stone-500">{fmtDate(event.createdAt)}</time>
+                  </div>
+                  <div className="mt-2 flex flex-wrap gap-2 text-xs text-stone-600">
+                    {location ? <span className="rounded-full bg-stone-100 px-2 py-1">Место: {location}</span> : null}
+                    {className ? (
+                      <span className="rounded-full bg-brandLight px-2 py-1 text-brandDark">Класс: {className}</span>
+                    ) : null}
+                  </div>
+                </li>
+              );
+            })}
           </ul>
         )}
       </section>
