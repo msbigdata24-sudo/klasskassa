@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
+import { PASSWORD_HINT } from "@/lib/password-policy";
 
 export function RegisterForm() {
   const router = useRouter();
@@ -65,7 +66,7 @@ export function RegisterForm() {
         />
       </label>
       <label className="flex flex-col gap-1 text-sm">
-        <span className="text-stone-600">Пароль (от 6 символов)</span>
+        <span className="text-stone-600">Пароль ({PASSWORD_HINT})</span>
         <input
           className="min-h-11 rounded-xl border border-stone-300 bg-white px-3 py-2 outline-none ring-peel/40 focus:ring-2"
           type="password"
@@ -73,7 +74,7 @@ export function RegisterForm() {
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           required
-          minLength={6}
+          minLength={8}
         />
       </label>
       <label className="flex items-start gap-2 text-xs text-stone-600">

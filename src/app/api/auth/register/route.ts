@@ -3,12 +3,13 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { logUserEvent } from "@/lib/analytics";
 import { isGuestEmail } from "@/lib/guest-user";
+import { passwordSchema } from "@/lib/password-policy";
 import { prisma } from "@/lib/prisma";
 import { createSessionToken, sessionCookieName, sessionCookieOptions } from "@/lib/session";
 
 const schema = z.object({
   email: z.string().email().max(255),
-  password: z.string().min(6).max(200),
+  password: passwordSchema,
   name: z.string().min(1).max(80),
   consent: z.literal(true).optional(),
 });
@@ -17,7 +18,8 @@ export async function POST(req: Request) {
   const body = await req.json().catch(() => null);
   const parsed = schema.safeParse(body);
   if (!parsed.success) {
-    return NextResponse.json({ error: "Проверьте email, имя и пароль (от 6 символов)" }, { status: 400 });
+    const msg = parsed.error.flatten().fieldErrors.password?.[0] ?? "Проверьте email, имя и пароль";
+    return NextResponse.json({ error: msg }, { status: 400 });
   }
   if (parsed.data.consent !== true) {
     return NextResponse.json(

@@ -1,7 +1,8 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { CollectionProgressBar, LoadingOverlay } from "@/components/collection-ui";
 
 type Contribution = {
   id: string;
@@ -24,7 +25,10 @@ export function CollectionPanel({
   isCommittee,
   currentUserId,
   reportUrl,
+  publicReportEnabled,
+  publicReportExpiresAt,
   exportUrl,
+  exportCsvUrl,
   contributions,
 }: {
   classId: string;
@@ -32,17 +36,25 @@ export function CollectionPanel({
   isCommittee: boolean;
   currentUserId: string;
   reportUrl: string;
+  publicReportEnabled: boolean;
+  publicReportExpiresAt: string | null;
   exportUrl: string;
+  exportCsvUrl: string;
   contributions: Contribution[];
 }) {
   const router = useRouter();
   const fileRef = useRef<HTMLInputElement>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [loadingLabel, setLoadingLabel] = useState("Загрузка…");
   const [targetUserId, setTargetUserId] = useState(currentUserId);
   const [openReceipt, setOpenReceipt] = useState<{ url: string; name: string } | null>(null);
   const [shareUrl, setShareUrl] = useState(reportUrl);
   const [copiedShareUrl, setCopiedShareUrl] = useState(false);
+  const [reportEnabled, setReportEnabled] = useState(publicReportEnabled);
+  const [reportExpiresAt, setReportExpiresAt] = useState(publicReportExpiresAt);
+  const [listQuery, setListQuery] = useState("");
+  const [justPaidUserId, setJustPaidUserId] = useState<string | null>(null);
 
   const mine = contributions.find((c) => c.userId === currentUserId);
 
@@ -50,9 +62,24 @@ export function CollectionPanel({
     setShareUrl(reportUrl.startsWith("http") ? reportUrl : `${window.location.origin}${reportUrl}`);
   }, [reportUrl]);
 
+  useEffect(() => {
+    setReportEnabled(publicReportEnabled);
+    setReportExpiresAt(publicReportExpiresAt);
+  }, [publicReportEnabled, publicReportExpiresAt]);
+
+  const paid = contributions.filter(
+    (c) => c.isPaid && ((c.receiptUrl && c.receiptMime && c.receiptStored) || c.receiptDeletedAt),
+  );
+  const unpaid = contributions.filter((c) => !c.isPaid || (!c.receiptStored && !c.receiptDeletedAt));
+
+  const q = listQuery.trim().toLowerCase();
+  const filteredPaid = useMemo(() => paid.filter((c) => !q || c.name.toLowerCase().includes(q)), [paid, q]);
+  const filteredUnpaid = useMemo(() => unpaid.filter((c) => !q || c.name.toLowerCase().includes(q)), [unpaid, q]);
+
   async function markPaid(userId: string, isPaid: boolean) {
     setError(null);
     setLoading(true);
+    setLoadingLabel("Обновляем статус…");
     try {
       const res = await fetch(`/api/classes/${classId}/collections/${collectionId}/mark-paid`, {
         method: "POST",
@@ -73,11 +100,16 @@ export function CollectionPanel({
   async function uploadReceipt(userId: string) {
     const file = fileRef.current?.files?.[0];
     if (!file) {
-      setError("Выберите фото чека");
+      setError("Выберите фото или PDF чека");
+      return;
+    }
+    if (!file.type.startsWith("image/") && file.type !== "application/pdf") {
+      setError("Допустимы только изображения или PDF");
       return;
     }
     setError(null);
     setLoading(true);
+    setLoadingLabel("Загружаем чек…");
     try {
       const form = new FormData();
       form.append("file", file);
@@ -92,14 +124,39 @@ export function CollectionPanel({
         return;
       }
       if (fileRef.current) fileRef.current.value = "";
+      setJustPaidUserId(userId);
+      window.setTimeout(() => setJustPaidUserId(null), 1200);
       router.refresh();
     } finally {
       setLoading(false);
     }
   }
 
-  const paid = contributions.filter((c) => c.isPaid && ((c.receiptUrl && c.receiptMime && c.receiptStored) || c.receiptDeletedAt));
-  const unpaid = contributions.filter((c) => !c.isPaid || (!c.receiptStored && !c.receiptDeletedAt));
+  async function manageReportLink(action: "rotate" | "disable" | "enable" | "extend") {
+    setError(null);
+    setLoading(true);
+    setLoadingLabel("Обновляем ссылку…");
+    try {
+      const res = await fetch(`/api/classes/${classId}/collections/${collectionId}/report-link`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        setError(typeof data.error === "string" ? data.error : "Не удалось обновить ссылку");
+        return;
+      }
+      if (data.collection?.publicReportCode) {
+        setShareUrl(`${window.location.origin}/report/${data.collection.publicReportCode}`);
+      }
+      setReportEnabled(Boolean(data.collection?.publicReportEnabled));
+      setReportExpiresAt(data.collection?.publicReportExpiresAt ?? null);
+      router.refresh();
+    } finally {
+      setLoading(false);
+    }
+  }
 
   function isImageReceipt(url: string) {
     return /\.(png|jpe?g|webp|gif)(\?.*)?$/i.test(url);
@@ -113,7 +170,7 @@ export function CollectionPanel({
     try {
       await navigator.clipboard.writeText(shareUrl);
       setCopiedShareUrl(true);
-      window.setTimeout(() => setCopiedShareUrl(false), 1800);
+      window.setTimeout(() => setCopiedShareUrl(false), 2000);
     } catch {
       setError("Не удалось скопировать ссылку. Скопируйте её вручную.");
     }
@@ -121,28 +178,79 @@ export function CollectionPanel({
 
   return (
     <div className="flex flex-col gap-6">
+      {loading ? <LoadingOverlay label={loadingLabel} /> : null}
+
       <section className="rounded-2xl bg-brandLight p-4 ring-1 ring-brand/20">
         <h2 className="font-semibold text-brandDark">Статус оплаты</h2>
-        <p className="mt-1 text-2xl font-bold text-stone-900">
-          Оплатили: {paid.length} из {contributions.length}
-        </p>
-        <div className="mt-2 flex flex-col gap-2 text-sm text-brandDark sm:flex-row sm:items-center">
+        <CollectionProgressBar paid={paid.length} total={contributions.length} />
+        <div className="mt-3 flex flex-col gap-2 text-sm text-brandDark sm:flex-row sm:items-center">
           <span className="font-medium">Ссылка для чата:</span>
-          <a href={reportUrl} className="break-all underline" target="_blank" rel="noreferrer">
-            {shareUrl}
-          </a>
+          {!reportEnabled ? (
+            <span className="text-amber-800">отключена родкомом</span>
+          ) : (
+            <a href={shareUrl} className="break-all underline" target="_blank" rel="noreferrer">
+              {shareUrl}
+            </a>
+          )}
           <button
             type="button"
             onClick={() => void copyShareUrl()}
-            className="shrink-0 rounded-lg border border-brand/30 bg-white px-2.5 py-1 text-xs font-semibold text-brandDark hover:bg-brandLight"
+            disabled={!reportEnabled}
+            className="shrink-0 rounded-lg border border-brand/30 bg-white px-2.5 py-1 text-xs font-semibold text-brandDark hover:bg-brandLight disabled:opacity-50"
           >
-            {copiedShareUrl ? "Скопировано" : "Скопировать"}
+            {copiedShareUrl ? "✓ Скопировано" : "Скопировать"}
           </button>
         </div>
-        <a href={exportUrl} className="mt-3 inline-block text-sm font-medium text-brand underline">
-          Скачать Excel
-        </a>
+        {reportExpiresAt ? (
+          <p className="mt-1 text-xs text-stone-600">
+            Ссылка действует до {new Date(reportExpiresAt).toLocaleDateString("ru-RU")}
+          </p>
+        ) : null}
+        {isCommittee ? (
+          <div className="mt-2 flex flex-wrap gap-2">
+            <button
+              type="button"
+              className="rounded-lg border border-stone-300 bg-white px-2 py-1 text-xs"
+              onClick={() => void manageReportLink("rotate")}
+            >
+              Новая ссылка
+            </button>
+            <button
+              type="button"
+              className="rounded-lg border border-stone-300 bg-white px-2 py-1 text-xs"
+              onClick={() => void manageReportLink(reportEnabled ? "disable" : "enable")}
+            >
+              {reportEnabled ? "Отключить" : "Включить"}
+            </button>
+            <button
+              type="button"
+              className="rounded-lg border border-stone-300 bg-white px-2 py-1 text-xs"
+              onClick={() => void manageReportLink("extend")}
+            >
+              Продлить на 180 дней
+            </button>
+          </div>
+        ) : null}
+        <div className="mt-3 flex flex-wrap gap-3 text-sm">
+          <a href={exportUrl} className="font-medium text-brand underline">
+            Excel
+          </a>
+          <a href={exportCsvUrl} className="font-medium text-brand underline">
+            CSV
+          </a>
+        </div>
       </section>
+
+      <label className="flex flex-col gap-1 text-sm">
+        <span className="text-stone-600">Поиск по списку</span>
+        <input
+          type="search"
+          value={listQuery}
+          onChange={(e) => setListQuery(e.target.value)}
+          placeholder="Имя родителя…"
+          className="min-h-11 rounded-xl border border-stone-300 bg-white px-3 py-2 outline-none ring-brand/30 focus:ring-2"
+        />
+      </label>
 
       {mine && !isCommittee ? (
         <section className="rounded-2xl bg-white p-4 shadow-sm ring-1 ring-stone-200/80">
@@ -154,19 +262,18 @@ export function CollectionPanel({
               : mine.isPaid && mine.receiptDeletedAt
                 ? "оплачено, чек удалён по сроку хранения"
                 : "нужен чек для зачёта оплаты"}
-            {mine.markedByParent ? " (отметили сами)" : ""}
           </p>
           {!(mine.isPaid && (mine.receiptStored || mine.receiptDeletedAt)) ? (
             <div className="mt-3 flex flex-col gap-2">
               <p className="text-xs text-stone-500">
-                Прикрепите фото или PDF чека — после этого взнос считается оплаченным. Чеки хранятся 90 дней.
+                Прикрепите чёткое фото или PDF — без файла оплата не засчитывается. Чеки хранятся 90 дней.
               </p>
-              <input ref={fileRef} type="file" accept="image/*,application/pdf" className="text-sm" />
+              <input ref={fileRef} type="file" accept="image/*,application/pdf" className="min-h-11 text-sm" />
               <button
                 type="button"
                 disabled={loading}
                 onClick={() => void uploadReceipt(currentUserId)}
-                className="rounded-xl border border-brand px-3 py-2 text-sm font-medium text-brandDark"
+                className="min-h-11 rounded-xl border border-brand px-3 py-2 text-sm font-medium text-brandDark"
               >
                 Прикрепить чек и засчитать оплату
               </button>
@@ -179,20 +286,23 @@ export function CollectionPanel({
             >
               Открыть чек
             </button>
-          ) : mine.receiptDeletedAt ? (
-            <p className="mt-2 text-sm text-stone-500">Чек удалён по сроку хранения.</p>
           ) : null}
         </section>
       ) : null}
 
       <section className="rounded-2xl bg-white p-4 shadow-sm ring-1 ring-stone-200/80">
         <h2 className="font-semibold text-stone-900">Кто сдал</h2>
-        {paid.length === 0 ? (
+        {filteredPaid.length === 0 ? (
           <p className="mt-2 text-sm text-stone-500">Пока никто.</p>
         ) : (
           <ul className="mt-2 space-y-2 text-sm">
-            {paid.map((c) => (
-              <li key={c.id} className="flex flex-wrap items-center justify-between gap-2 border-b border-stone-100 pb-2">
+            {filteredPaid.map((c) => (
+              <li
+                key={c.id}
+                className={`flex flex-wrap items-center justify-between gap-2 border-b border-stone-100 pb-2 transition-colors ${
+                  justPaidUserId === c.userId ? "rounded-lg bg-green-50 px-1" : ""
+                }`}
+              >
                 <span>
                   {c.name}
                   {c.isGuest ? " (гость)" : ""}
@@ -207,7 +317,7 @@ export function CollectionPanel({
                     Показать чек
                   </button>
                 ) : c.receiptDeletedAt ? (
-                  <span className="text-xs text-stone-500">чек удалён по сроку хранения</span>
+                  <span className="text-xs text-stone-500">чек удалён по сроку</span>
                 ) : null}
                 {isCommittee ? (
                   <button
@@ -226,11 +336,11 @@ export function CollectionPanel({
 
       <section className="rounded-2xl bg-white p-4 shadow-sm ring-1 ring-stone-200/80">
         <h2 className="font-semibold text-stone-900">Кто не сдал</h2>
-        {unpaid.length === 0 ? (
-          <p className="mt-2 text-sm text-green-700">Все сдали!</p>
+        {filteredUnpaid.length === 0 ? (
+          <p className="mt-2 text-sm text-green-700">{unpaid.length === 0 ? "Все сдали!" : "Никого не найдено."}</p>
         ) : (
           <ul className="mt-2 space-y-3 text-sm">
-            {unpaid.map((c) => (
+            {filteredUnpaid.map((c) => (
               <li key={c.id} className="border-b border-stone-100 pb-2">
                 <div className="flex justify-between gap-2">
                   <span>
@@ -238,7 +348,7 @@ export function CollectionPanel({
                     {c.isGuest ? " (гость)" : ""}
                   </span>
                   <span className="text-amber-700">
-                    {c.isPaid && !c.receiptStored && !c.receiptDeletedAt ? "чек нужно загрузить заново" : "не оплачено"}
+                    {c.isPaid && !c.receiptStored && !c.receiptDeletedAt ? "нужен чек" : "не оплачено"}
                   </span>
                 </div>
                 {isCommittee ? (
@@ -249,7 +359,7 @@ export function CollectionPanel({
                         setTargetUserId(c.userId);
                         fileRef.current?.click();
                       }}
-                      className="rounded-lg border border-stone-300 px-2 py-1 text-xs"
+                      className="min-h-9 rounded-lg border border-stone-300 px-2 py-1 text-xs"
                     >
                       Прикрепить чек
                     </button>

@@ -84,15 +84,48 @@ export async function GET(req: Request, { params }: Params) {
   });
   if (!collection) return NextResponse.json({ error: "Сбор не найден" }, { status: 404 });
 
+  const format = searchParams.get("format");
   const exportDate = new Date().toISOString().slice(0, 10);
   const filename = ["КлассКасса", safeFilenamePart(collection.class.name), safeFilenamePart(collection.title), exportDate]
     .filter(Boolean)
     .join(" - ");
 
+  if (format === "csv") {
+    const header = ["Родитель", "Email", "Сумма", "Статус", "Дата оплаты", "Комментарий"];
+    const rows = collection.contributions.map((c) => {
+      const status =
+        c.isPaid && c.receiptStored
+          ? "Оплачено"
+          : c.isPaid && c.receiptDeletedAt
+            ? "Оплачено, чек удалён"
+            : c.isPaid
+              ? "Нужен чек"
+              : "Не оплачено";
+      return [
+        c.user.name,
+        c.user.email.includes("@klasskassa.guest") ? "" : c.user.email,
+        (collection.amountCents / 100).toFixed(2),
+        status,
+        c.paidAt?.toISOString().slice(0, 10) ?? "",
+        c.comment,
+      ];
+    });
+    const escape = (v: string) => `"${v.replaceAll('"', '""')}"`;
+    const csv = "\uFEFF" + [header, ...rows].map((row) => row.map((c) => escape(String(c))).join(";")).join("\n");
+    return new NextResponse(csv, {
+      headers: {
+        "Content-Type": "text/csv; charset=utf-8",
+        "Content-Disposition": `attachment; filename*=UTF-8''${encodeURIComponent(`${filename}.csv`)}`,
+      },
+    });
+  }
+
+  const exportDateLegacy = exportDate;
+
   const rows = [
     htmlRow(["Класс", collection.class.name]),
     htmlRow(["Сбор", collection.title]),
-    htmlRow(["Дата выгрузки", exportDate]),
+    htmlRow(["Дата выгрузки", exportDateLegacy]),
     htmlRow([""]),
     htmlRow(["Родитель", "Email", "Сумма взноса", "Статус оплаты", "Дата оплаты", "Кто отметил", "Чек URL", "Комментарий"], "th"),
     ...collection.contributions.map((c) =>

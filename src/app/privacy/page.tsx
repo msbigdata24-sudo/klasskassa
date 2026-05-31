@@ -1,8 +1,18 @@
 import Link from "next/link";
-import { LEGAL_DOCS_EFFECTIVE_DATE, LEGAL_DOCS_VERSION, OPERATOR, operatorIntroLine } from "@/lib/legal-operator";
+import {
+  LEGAL_DOCS_EFFECTIVE_DATE,
+  LEGAL_DOCS_VERSION,
+  OPERATOR,
+  SERVICE_NAME,
+  operatorIntroLine,
+  operatorRequisitesLine,
+} from "@/lib/legal-operator";
+import { PUBLIC_REPORT_TTL_DAYS } from "@/lib/public-report";
+import { PASSWORD_HINT, PASSWORD_MIN_LENGTH } from "@/lib/password-policy";
+import { RECEIPT_RETENTION_DAYS } from "@/lib/receipts";
 
 export const metadata = {
-  title: "Политика конфиденциальности — Апельсин",
+  title: `Политика конфиденциальности — ${SERVICE_NAME}`,
 };
 
 export default function PrivacyPage() {
@@ -14,204 +24,156 @@ export default function PrivacyPage() {
       </p>
 
       <section className="rounded-2xl bg-white p-5 text-sm text-stone-700 shadow-sm ring-1 ring-stone-200/80">
-        <h2 className="text-sm font-semibold uppercase tracking-wide text-peel">1. Общие положения</h2>
+        <h2 className="text-sm font-semibold uppercase tracking-wide text-brand">1. Общие положения</h2>
         <p className="mt-2">
-          Настоящая Политика конфиденциальности (далее — «Политика») описывает порядок обработки персональных данных
-          пользователей сервиса «Апельсин» (далее — «Сервис»). Политика составлена в соответствии с Федеральным законом
-          от 27.07.2006 № 152-ФЗ «О персональных данных» (далее — «Закон 152-ФЗ»).
+          Настоящая Политика описывает порядок обработки персональных данных пользователей сервиса «{SERVICE_NAME}»
+          (далее — «Сервис»). Политика составлена в соответствии с Федеральным законом от 27.07.2006 № 152-ФЗ «О
+          персональных данных».
         </p>
+        <p className="mt-2">Оператор персональных данных: {operatorIntroLine()}</p>
+        <p className="mt-2">{operatorRequisitesLine()}</p>
         <p className="mt-2">
-          Оператором персональных данных является {operatorIntroLine()} (далее — «Оператор»).
-        </p>
-        <p className="mt-2">
-          Используя Сервис и/или регистрируя аккаунт, пользователь подтверждает, что ознакомлен с Политикой и даёт
-          согласие на обработку персональных данных на условиях, описанных ниже.
-        </p>
-      </section>
-
-      <section className="rounded-2xl bg-white p-5 text-sm text-stone-700 shadow-sm ring-1 ring-stone-200/80">
-        <h2 className="text-sm font-semibold uppercase tracking-wide text-peel">2. Какие данные мы собираем</h2>
-        <p className="mt-2">Оператор обрабатывает следующие категории данных пользователей:</p>
-        <ul className="mt-2 list-disc space-y-1 pl-5">
-          <li>учётные данные: адрес электронной почты, имя, хеш пароля;</li>
-          <li>данные о финансовой активности внутри групп: суммы расходов, участники, кто платил, кому должен, погашения, заметки к расходам;</li>
-          <li>содержание сообщений: текстовые и голосовые сообщения в групповых чатах и личных сообщениях между участниками;</li>
-          <li>служебные данные: токены сессий, push-токены устройств, IP-адрес, параметры устройства и браузера;</li>
-          <li>настройки уведомлений (email, push) и настройки видимости групп;</li>
-          <li>данные о действиях в Сервисе (журнал событий: вход, регистрация, операции с расходами и долгами) — для безопасности и внутренних метрик;</li>
-          <li>при использовании платных функций — данные, необходимые платёжному сервису для проведения платежа (передаются напрямую платёжному провайдеру; реквизиты карт Оператор не хранит).</li>
-        </ul>
-      </section>
-
-      <section className="rounded-2xl bg-white p-5 text-sm text-stone-700 shadow-sm ring-1 ring-stone-200/80">
-        <h2 className="text-sm font-semibold uppercase tracking-wide text-peel">3. Цели обработки</h2>
-        <ul className="mt-2 list-disc space-y-1 pl-5">
-          <li>создание и поддержание учётной записи пользователя;</li>
-          <li>предоставление функциональности Сервиса: учёт совместных расходов, расчёт балансов, обмен сообщениями;</li>
-          <li>обеспечение безопасности (защита от несанкционированного доступа, расследование инцидентов);</li>
-          <li>отправка сервисных уведомлений (по email и push) в соответствии с настройками пользователя;</li>
-          <li>информирование о существенных изменениях в Сервисе и в условиях его использования;</li>
-          <li>анализ использования Сервиса в обезличенном виде для улучшения продукта;</li>
-          <li>исполнение требований законодательства Российской Федерации.</li>
-        </ul>
-      </section>
-
-      <section className="rounded-2xl bg-white p-5 text-sm text-stone-700 shadow-sm ring-1 ring-stone-200/80">
-        <h2 className="text-sm font-semibold uppercase tracking-wide text-peel">4. Правовые основания</h2>
-        <p className="mt-2">Обработка персональных данных осуществляется на следующих основаниях:</p>
-        <ul className="mt-2 list-disc space-y-1 pl-5">
-          <li>согласие пользователя, предоставленное при регистрации в Сервисе (ст. 6 ч. 1 п. 1 Закона 152-ФЗ);</li>
-          <li>исполнение договора (Пользовательского соглашения), стороной которого является пользователь (ст. 6 ч. 1 п. 5);</li>
-          <li>исполнение обязанностей, возложенных законодательством Российской Федерации.</li>
-        </ul>
-      </section>
-
-      <section className="rounded-2xl bg-white p-5 text-sm text-stone-700 shadow-sm ring-1 ring-stone-200/80">
-        <h2 className="text-sm font-semibold uppercase tracking-wide text-peel">5. Способы и сроки обработки</h2>
-        <p className="mt-2">
-          Обработка осуществляется как с использованием средств автоматизации, так и без них (на стороне Оператора —
-          только средствами автоматизации). Доступ к данным ограничен и предоставляется только лицам, выполняющим
-          задачи, прямо связанные с поддержкой и развитием Сервиса.
-        </p>
-        <p className="mt-2">
-          Сроки хранения:
-        </p>
-        <ul className="mt-2 list-disc space-y-1 pl-5">
-          <li>учётные данные и данные о финансовой активности — на протяжении срока существования аккаунта пользователя;</li>
-          <li>сообщения — до удаления аккаунта пользователем или до удаления соответствующей группы;</li>
-          <li>журналы событий — до 12 месяцев с момента события (для целей безопасности);</li>
-          <li>служебные cookie и токены сессий — на срок действия сессии или до явного выхода пользователя.</li>
-        </ul>
-        <p className="mt-2">
-          После удаления аккаунта личные сведения пользователя (email, имя, переписка, push-подписки, настройки
-          уведомлений) удаляются. Записи о финансовой активности в группах, в которых участвовал пользователь, могут
-          быть сохранены в обезличенном виде («Удалённый пользователь») для сохранения целостности взаиморасчётов
-          между остальными участниками таких групп.
+          Регистрируясь и используя Сервис, вы подтверждаете ознакомление с Политикой и даёте согласие на обработку
+          персональных данных на изложенных условиях, включая трансграничную передачу на бета-этапе (раздел 7).
         </p>
       </section>
 
       <section className="rounded-2xl bg-white p-5 text-sm text-stone-700 shadow-sm ring-1 ring-stone-200/80">
-        <h2 className="text-sm font-semibold uppercase tracking-wide text-peel">6. Передача данных третьим лицам</h2>
-        <p className="mt-2">
-          Оператор не передаёт персональные данные третьим лицам, кроме как:
-        </p>
+        <h2 className="text-sm font-semibold uppercase tracking-wide text-brand">2. Какие данные мы обрабатываем</h2>
         <ul className="mt-2 list-disc space-y-1 pl-5">
+          <li>учётные данные: email, имя (как вас называть), хеш пароля (сам пароль не хранится);</li>
+          <li>данные класса: название класса, роль (родком / родитель), список участников;</li>
+          <li>данные сборов: название, сумма, срок, статус оплаты по каждому родителю;</li>
           <li>
-            поставщикам инфраструктуры (хостинг, доставка email, push-уведомления) — в объёме, необходимом для работы
-            соответствующих функций;
+            фото и PDF чеков об оплате — только для подтверждения взноса; хранятся в зашифрованном канале (HTTPS) и в
+            базе данных провайдера;
+          </li>
+          <li>имена в публичном отчёте по сбору — если родком включил ссылку для чата;</li>
+          <li>служебные данные: cookie сессии, IP-адрес, журнал событий безопасности и поддержки.</li>
+        </ul>
+        <p className="mt-2">
+          Сервис <strong>не принимает</strong> школьные деньги и не хранит реквизиты банковских карт.
+        </p>
+      </section>
+
+      <section className="rounded-2xl bg-white p-5 text-sm text-stone-700 shadow-sm ring-1 ring-stone-200/80">
+        <h2 className="text-sm font-semibold uppercase tracking-wide text-brand">3. Цели обработки</h2>
+        <ul className="mt-2 list-disc space-y-1 pl-5">
+          <li>регистрация и вход в Сервис;</li>
+          <li>учёт родительских взносов и формирование отчётов для чата класса;</li>
+          <li>защита от несанкционированного доступа и злоупотреблений;</li>
+          <li>техническая поддержка и улучшение Сервиса;</li>
+          <li>исполнение требований законодательства РФ.</li>
+        </ul>
+      </section>
+
+      <section className="rounded-2xl bg-white p-5 text-sm text-stone-700 shadow-sm ring-1 ring-stone-200/80">
+        <h2 className="text-sm font-semibold uppercase tracking-wide text-brand">4. Правовые основания</h2>
+        <ul className="mt-2 list-disc space-y-1 pl-5">
+          <li>согласие пользователя при регистрации (ст. 6 ч. 1 п. 1 152-ФЗ);</li>
+          <li>исполнение Пользовательского соглашения (ст. 6 ч. 1 п. 5);</li>
+          <li>законные интересы оператора в обеспечении безопасности Сервиса.</li>
+        </ul>
+      </section>
+
+      <section className="rounded-2xl bg-white p-5 text-sm text-stone-700 shadow-sm ring-1 ring-stone-200/80">
+        <h2 className="text-sm font-semibold uppercase tracking-wide text-brand">5. Сроки хранения</h2>
+        <ul className="mt-2 list-disc space-y-1 pl-5">
+          <li>учётные данные и данные классов — пока существует аккаунт;</li>
+          <li>
+            файлы чеков — {RECEIPT_RETENTION_DAYS} дней с момента загрузки, затем содержимое удаляется (статус оплаты
+            может сохраниться);
           </li>
           <li>
-            платёжным провайдерам (например, ЮKassa) — при оплате тарифа Pro или подарочной подписки. Платёжные данные
-            (реквизиты карт, СБП) пользователь вводит напрямую на стороне платёжного сервиса; Оператор их не получает и
-            не хранит;
+            публичные ссылки отчётов — до {PUBLIC_REPORT_TTL_DAYS} дней с создания сбора или до отключения/обновления
+            родкомом;
           </li>
-          <li>уполномоченным государственным органам — по основаниям и в порядке, предусмотренным законодательством.</li>
+          <li>журналы событий — до 12 месяцев.</li>
         </ul>
+      </section>
+
+      <section className="rounded-2xl bg-white p-5 text-sm text-stone-700 shadow-sm ring-1 ring-stone-200/80">
+        <h2 className="text-sm font-semibold uppercase tracking-wide text-brand">6. Передача третьим лицам</h2>
         <p className="mt-2">
-          Оператор не продаёт данные пользователей и не использует их для рекламных рассылок третьих лиц.
+          Данные могут обрабатываться хостинг-провайдером (Render) и сервисом доставки email (если включён сброс пароля).
+          Мы не продаём персональные данные. Публичный отчёт по ссылке виден любому, у кого есть ссылка — родком
+          самостоятельно решает, кому её отправлять.
         </p>
       </section>
 
       <section className="rounded-2xl bg-white p-5 text-sm text-stone-700 shadow-sm ring-1 ring-stone-200/80">
-        <h2 className="text-sm font-semibold uppercase tracking-wide text-peel">7. Размещение базы данных и трансграничная передача</h2>
+        <h2 className="text-sm font-semibold uppercase tracking-wide text-brand">7. Размещение БД и трансграничная передача</h2>
         <p className="mt-2">{OPERATOR.dbHostingNote}</p>
         <p className="mt-2">
-          На указанном этапе данные пользователей могут обрабатываться на серверах за пределами Российской Федерации.
-          Регистрируясь в Сервисе на бета-этапе, пользователь даёт информированное согласие на трансграничную передачу
-          персональных данных в страну, обеспечивающую адекватную защиту прав субъектов персональных данных, в объёме,
-          необходимом для работы Сервиса.
-        </p>
-        <p className="mt-2">
-          После переноса инфраструктуры в Российскую Федерацию Политика будет обновлена, а пользователи —
-          проинформированы о смене места обработки.
+          Регистрируясь на бета-этапе, вы даёте информированное согласие на трансграничную передачу персональных данных
+          в объёме, необходимом для работы Сервиса. После переноса инфраструктуры в РФ Политика будет обновлена.
         </p>
       </section>
 
       <section className="rounded-2xl bg-white p-5 text-sm text-stone-700 shadow-sm ring-1 ring-stone-200/80">
-        <h2 className="text-sm font-semibold uppercase tracking-wide text-peel">8. Cookie и аналогичные технологии</h2>
+        <h2 className="text-sm font-semibold uppercase tracking-wide text-brand">8. Cookie и сессии</h2>
         <p className="mt-2">
-          Сервис использует строго необходимые cookie и технологии локального хранения для поддержания сессии
-          пользователя, корректной работы офлайн-режима и сохранения пользовательских настроек интерфейса. Без них
-          Сервис не сможет работать.
-        </p>
-        <p className="mt-2">
-          На бета-этапе сторонние рекламные и аналитические системы, передающие данные третьим лицам, в Сервисе не
-          используются.
+          Сервис использует строго необходимую cookie сессии (JWT в httpOnly-cookie) для входа. Без неё работа
+          невозможна. Рекламные и сторонние аналитические cookie на бета-этапе не используются.
         </p>
       </section>
 
       <section className="rounded-2xl bg-white p-5 text-sm text-stone-700 shadow-sm ring-1 ring-stone-200/80">
-        <h2 className="text-sm font-semibold uppercase tracking-wide text-peel">9. Права пользователя</h2>
-        <p className="mt-2">В соответствии со ст. 14, 15 и 21 Закона 152-ФЗ пользователь имеет право:</p>
+        <h2 className="text-sm font-semibold uppercase tracking-wide text-brand">9. Безопасность</h2>
         <ul className="mt-2 list-disc space-y-1 pl-5">
-          <li>получать сведения о составе и целях обработки своих персональных данных;</li>
-          <li>требовать уточнения, исправления или блокирования данных в случае их неточности;</li>
-          <li>отозвать согласие на обработку и потребовать удаления данных (см. раздел 10);</li>
-          <li>обжаловать действия Оператора в уполномоченный орган по защите прав субъектов персональных данных
-            (Роскомнадзор) или в суд.</li>
-        </ul>
-      </section>
-
-      <section className="rounded-2xl bg-white p-5 text-sm text-stone-700 shadow-sm ring-1 ring-stone-200/80">
-        <h2 className="text-sm font-semibold uppercase tracking-wide text-peel">10. Удаление аккаунта и отзыв согласия</h2>
-        <p className="mt-2">
-          Отозвать согласие на обработку персональных данных пользователь может одним из следующих способов:
-        </p>
-        <ul className="mt-2 list-disc space-y-1 pl-5">
-          <li>самостоятельно удалить аккаунт в личном кабинете Сервиса (раздел «Личные → Удалить аккаунт»);</li>
-          <li>направить запрос на адрес электронной почты Оператора:{" "}
-            <a href={`mailto:${OPERATOR.contactEmail}`} className="text-rind underline hover:text-peel">
-              {OPERATOR.contactEmail}
-            </a>
-            .
-          </li>
-        </ul>
-        <p className="mt-2">
-          После удаления аккаунта Оператор удаляет персональные данные пользователя в срок, не превышающий 30 дней,
-          за исключением данных, которые в силу закона должны храниться дольше, и обезличенных записей о финансовой
-          активности в группах, сохраняемых для целостности расчётов остальных участников этих групп.
-        </p>
-      </section>
-
-      <section className="rounded-2xl bg-white p-5 text-sm text-stone-700 shadow-sm ring-1 ring-stone-200/80">
-        <h2 className="text-sm font-semibold uppercase tracking-wide text-peel">11. Защита данных</h2>
-        <p className="mt-2">
-          Оператор применяет необходимые технические и организационные меры для защиты персональных данных от
-          неправомерного доступа, изменения, раскрытия и уничтожения: шифрование канала связи (HTTPS), хеширование
-          паролей, ограничение доступа к данным, журналирование событий безопасности, регулярное обновление
-          инфраструктурных компонентов.
-        </p>
-      </section>
-
-      <section className="rounded-2xl bg-white p-5 text-sm text-stone-700 shadow-sm ring-1 ring-stone-200/80">
-        <h2 className="text-sm font-semibold uppercase tracking-wide text-peel">12. Изменения Политики</h2>
-        <p className="mt-2">
-          Оператор вправе обновлять Политику. Актуальная редакция всегда доступна по адресу{" "}
-          <Link href="/privacy" className="text-rind underline hover:text-peel">/privacy</Link>. Существенные изменения
-          доводятся до пользователей дополнительно (через email или баннер в Сервисе).
-        </p>
-      </section>
-
-      <section className="rounded-2xl bg-white p-5 text-sm text-stone-700 shadow-sm ring-1 ring-stone-200/80">
-        <h2 className="text-sm font-semibold uppercase tracking-wide text-peel">13. Контакты</h2>
-        <p className="mt-2">
-          По вопросам обработки персональных данных, для получения сведений о составе обрабатываемых данных и для
-          подачи запросов на удаление обращайтесь:
-        </p>
-        <ul className="mt-2 list-disc space-y-1 pl-5">
+          <li>HTTPS для всех соединений;</li>
+          <li>пароли хранятся в виде bcrypt-хеша; минимальная длина пароля — {PASSWORD_MIN_LENGTH} символов ({PASSWORD_HINT});</li>
           <li>
-            email:{" "}
-            <a href={`mailto:${OPERATOR.contactEmail}`} className="text-rind underline hover:text-peel">
-              {OPERATOR.contactEmail}
-            </a>
+            загрузка чеков: проверка типа и содержимого файла (magic bytes), ограничение размера, сжатие изображений;
+            антивирусная проверка на стороне сервера не выполняется — загружайте только свои чеки;
           </li>
-          <li>
-            Telegram:{" "}
-            <a href={OPERATOR.telegramBetaInvite} target="_blank" rel="noopener noreferrer" className="text-rind underline hover:text-peel">
-              {OPERATOR.telegramBetaTitle}
-            </a>
-          </li>
-          <li>почтовый адрес: {OPERATOR.postalAddress}</li>
+          <li>ограничение частоты запросов к публичным отчётам;</li>
+          <li>родком может отключить или обновить публичную ссылку отчёта.</li>
+        </ul>
+        <p className="mt-2">{OPERATOR.backupNote}</p>
+      </section>
+
+      <section className="rounded-2xl bg-white p-5 text-sm text-stone-700 shadow-sm ring-1 ring-stone-200/80">
+        <h2 className="text-sm font-semibold uppercase tracking-wide text-brand">10. Права пользователя</h2>
+        <p className="mt-2">
+          Вы вправе запросить сведения об обработке, исправление данных, отзыв согласия и удаление аккаунта — через email{" "}
+          <a href={`mailto:${OPERATOR.contactEmail}`} className="text-brand underline">
+            {OPERATOR.contactEmail}
+          </a>{" "}
+          (тема «ПДн») или Telegram{" "}
+          <a href={OPERATOR.telegramBetaInvite} className="text-brand underline" target="_blank" rel="noopener noreferrer">
+            {OPERATOR.telegramBetaTitle}
+          </a>
+          . Жалоба — в Роскомнадзор или суд.
+        </p>
+      </section>
+
+      <section className="rounded-2xl bg-white p-5 text-sm text-stone-700 shadow-sm ring-1 ring-stone-200/80">
+        <h2 className="text-sm font-semibold uppercase tracking-wide text-brand">11. Удаление аккаунта</h2>
+        <p className="mt-2">
+          Запрос на удаление направьте на {OPERATOR.contactEmail}. Данные удаляются в разумный срок, за исключением
+          записей, которые должны храниться по закону. Записи о сборах в классе могут остаться обезличенными для
+          целостности отчётов других родителей.
+        </p>
+      </section>
+
+      <section className="rounded-2xl bg-white p-5 text-sm text-stone-700 shadow-sm ring-1 ring-stone-200/80">
+        <h2 className="text-sm font-semibold uppercase tracking-wide text-brand">12. Изменения Политики</h2>
+        <p className="mt-2">
+          Актуальная версия —{" "}
+          <Link href="/privacy" className="text-brand underline">
+            /privacy
+          </Link>
+          . Существенные изменения доводим через email или баннер в Сервисе.
+        </p>
+      </section>
+
+      <section className="rounded-2xl bg-white p-5 text-sm text-stone-700 shadow-sm ring-1 ring-stone-200/80">
+        <h2 className="text-sm font-semibold uppercase tracking-wide text-brand">13. Контакты</h2>
+        <ul className="mt-2 list-disc space-y-1 pl-5">
+          <li>email: {OPERATOR.contactEmail}</li>
+          <li>Telegram: {OPERATOR.telegramBetaTitle}</li>
+          <li>почтовый адрес / корреспонденция: {OPERATOR.postalAddress}</li>
         </ul>
       </section>
     </main>

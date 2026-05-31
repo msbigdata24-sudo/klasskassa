@@ -72,7 +72,9 @@ model Collection {
   description      String         @default("")
   amountCents      Int
   deadline         DateTime?
-  publicReportCode String         @unique @default(cuid())
+  publicReportCode      String    @unique @default(cuid())
+  publicReportEnabled   Boolean   @default(true) @map("public_report_enabled")
+  publicReportExpiresAt DateTime? @map("public_report_expires_at")
   createdById      String
   createdAt        DateTime       @default(now())
   updatedAt        DateTime       @updatedAt

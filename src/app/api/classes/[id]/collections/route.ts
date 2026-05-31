@@ -4,6 +4,7 @@ import { logActivity } from "@/lib/activity";
 import { getCurrentUser } from "@/lib/auth";
 import { requireClassCommittee, requireClassMembership } from "@/lib/class-access";
 import { parseRubToCents } from "@/lib/money";
+import { defaultReportExpiresAt } from "@/lib/public-report";
 import { prisma } from "@/lib/prisma";
 
 type Params = { params: Promise<{ id: string }> };
@@ -93,6 +94,7 @@ export async function POST(req: Request, { params }: Params) {
       amountCents,
       deadline: parsed.data.deadline ? new Date(parsed.data.deadline) : null,
       createdById: user.id,
+      publicReportExpiresAt: defaultReportExpiresAt(),
       contributions: {
         create: members.map((m) => ({ userId: m.userId })),
       },

@@ -1,4 +1,4 @@
-import { OPERATOR, operatorIntroLine } from "@/lib/legal-operator";
+import { OPERATOR, LEGAL_BETA_DISCLOSURE, operatorRequisitesLine } from "@/lib/legal-operator";
 
 export const metadata = {
   title: "Контакты — КлассКасса",
@@ -11,10 +11,8 @@ export default function ContactsPage() {
 
       <section className="rounded-2xl bg-white p-5 text-sm text-stone-700 shadow-sm ring-1 ring-stone-200/80">
         <h2 className="text-sm font-semibold uppercase tracking-wide text-brand">Оператор персональных данных</h2>
-        <ul className="mt-2 list-disc space-y-1 pl-5">
-          <li>{operatorIntroLine()}</li>
-          <li>почтовый адрес: {OPERATOR.postalAddress}</li>
-        </ul>
+        <p className="mt-2">{LEGAL_BETA_DISCLOSURE}</p>
+        <p className="mt-2">{operatorRequisitesLine()}</p>
       </section>
 
       <section className="rounded-2xl bg-white p-5 text-sm text-stone-700 shadow-sm ring-1 ring-stone-200/80">
@@ -26,7 +24,7 @@ export default function ContactsPage() {
           </a>
         </p>
         <p className="mt-1">
-          Telegram (бета-тест):{" "}
+          Telegram:{" "}
           <a
             href={OPERATOR.telegramBetaInvite}
             target="_blank"
@@ -36,9 +34,11 @@ export default function ContactsPage() {
             {OPERATOR.telegramBetaTitle}
           </a>
         </p>
+        <p className="mt-2 text-xs text-stone-500">
+          Официальная корреспонденция на бета-этапе: {OPERATOR.postalAddress}
+        </p>
         <p className="mt-3 text-xs text-stone-500">
-          По вопросам, связанным с обработкой персональных данных (доступ к данным, удаление, отзыв согласия),
-          указывайте в письме тему «ПДн».
+          По вопросам ПДн (доступ, удаление, отзыв согласия) — тема письма «ПДн».
         </p>
       </section>
     </main>

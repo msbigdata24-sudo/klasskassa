@@ -3,7 +3,9 @@ import sharp from "sharp";
 import { logActivity } from "@/lib/activity";
 import { getCurrentUser } from "@/lib/auth";
 import { getClassMembership, requireClassMembership } from "@/lib/class-access";
+import { validateReceiptBuffer } from "@/lib/file-validation";
 import { prisma } from "@/lib/prisma";
+import { logServerError } from "@/lib/server-log";
 
 type Params = { params: Promise<{ id: string; collectionId: string }> };
 
@@ -21,7 +23,12 @@ const EXT_BY_MIME: Record<string, string> = {
 
 async function prepareReceiptFile(file: File) {
   const input = Buffer.from(await file.arrayBuffer());
-  const isImage = file.type.startsWith("image/");
+  const validated = validateReceiptBuffer(input, file.type);
+  if (!validated.ok) {
+    throw new Error(validated.error);
+  }
+
+  const isImage = validated.mime.startsWith("image/");
 
   if (isImage) {
     if (file.size > MAX_IMAGE_BYTES) {
@@ -40,7 +47,7 @@ async function prepareReceiptFile(file: File) {
     };
   }
 
-  if (file.type === "application/pdf") {
+  if (file.type === "application/pdf" || validated.mime === "application/pdf") {
     if (file.size > MAX_PDF_BYTES) {
       throw new Error("PDF-чек не больше 3 МБ");
     }
@@ -55,6 +62,7 @@ async function prepareReceiptFile(file: File) {
 }
 
 export async function POST(req: Request, { params }: Params) {
+  try {
   const user = await getCurrentUser();
   if (!user) return NextResponse.json({ error: "Нужен вход" }, { status: 401 });
 
@@ -136,4 +144,8 @@ export async function POST(req: Request, { params }: Params) {
   });
 
   return NextResponse.json({ ok: true, contribution });
+  } catch (error) {
+    logServerError("receipt-upload", error);
+    return NextResponse.json({ error: "Не удалось сохранить чек" }, { status: 500 });
+  }
 }

@@ -19,7 +19,13 @@ export default async function CollectionPage({ params }: Props) {
 
   const collection = await prisma.collection.findFirst({
     where: { id: collectionId, classId },
-    include: {
+    select: {
+      title: true,
+      description: true,
+      amountCents: true,
+      publicReportCode: true,
+      publicReportEnabled: true,
+      publicReportExpiresAt: true,
       class: { select: { name: true } },
       contributions: {
         orderBy: { user: { name: "asc" } },
@@ -78,7 +84,10 @@ export default async function CollectionPage({ params }: Props) {
         isCommittee={isCommittee}
         currentUserId={user.id}
         reportUrl={reportPath}
+        publicReportEnabled={collection.publicReportEnabled}
+        publicReportExpiresAt={collection.publicReportExpiresAt?.toISOString() ?? null}
         exportUrl={`/api/classes/${classId}/export?collectionId=${collectionId}`}
+        exportCsvUrl={`/api/classes/${classId}/export?collectionId=${collectionId}&format=csv`}
         contributions={contributions}
       />
     </main>
