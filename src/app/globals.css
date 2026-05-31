@@ -31,6 +31,88 @@
   color-scheme: light;
 }
 
+.dark {
+  color-scheme: dark;
+}
+
 body {
   @apply min-h-screen bg-brandLight text-stone-900 antialiased;
+}
+
+.dark body {
+  @apply bg-stone-950 text-stone-100;
+}
+
+/* Быстрая тёмная тема для существующих utility-классов */
+.dark .bg-white {
+  @apply bg-stone-900;
+}
+
+.dark .bg-brandLight {
+  @apply bg-stone-950;
+}
+
+.dark .bg-stone-50 {
+  @apply bg-stone-800;
+}
+
+.dark .bg-green-50 {
+  @apply bg-green-950/40;
+}
+
+.dark .text-stone-900 {
+  @apply text-stone-100;
+}
+
+.dark .text-stone-800 {
+  @apply text-stone-200;
+}
+
+.dark .text-stone-700 {
+  @apply text-stone-300;
+}
+
+.dark .text-stone-600 {
+  @apply text-stone-400;
+}
+
+.dark .text-brandDark {
+  @apply text-blue-200;
+}
+
+.dark .ring-stone-200\/80,
+.dark .ring-stone-200 {
+  @apply ring-stone-700;
+}
+
+.dark .border-stone-100,
+.dark .border-stone-200,
+.dark .border-stone-300 {
+  @apply border-stone-700;
+}
+
+.dark input,
+.dark select,
+.dark textarea {
+  @apply border-stone-600 bg-stone-800 text-stone-100;
+}
+
+.dark footer {
+  @apply border-stone-700 text-stone-400;
+}
+
+.dark .from-brandLight {
+  --tw-gradient-from: rgb(12 10 9) var(--tw-gradient-from-position);
+}
+
+.dark .to-white {
+  --tw-gradient-to: rgb(28 25 23) var(--tw-gradient-to-position);
+}
+
+.dark .hover\:bg-brandLight:hover {
+  @apply bg-stone-800;
+}
+
+.dark .hover\:bg-white\/10:hover {
+  @apply bg-white/10;
 }

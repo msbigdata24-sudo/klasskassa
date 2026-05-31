@@ -23,10 +23,13 @@ export function CollectionPanel({
   classId,
   collectionId,
   isCommittee,
+  isViewer,
+  canUploadReceipt,
   currentUserId,
   reportUrl,
   publicReportEnabled,
   publicReportExpiresAt,
+  lastReminderAt,
   exportUrl,
   exportCsvUrl,
   contributions,
@@ -34,10 +37,13 @@ export function CollectionPanel({
   classId: string;
   collectionId: string;
   isCommittee: boolean;
+  isViewer: boolean;
+  canUploadReceipt: boolean;
   currentUserId: string;
   reportUrl: string;
   publicReportEnabled: boolean;
   publicReportExpiresAt: string | null;
+  lastReminderAt: string | null;
   exportUrl: string;
   exportCsvUrl: string;
   contributions: Contribution[];
@@ -51,6 +57,8 @@ export function CollectionPanel({
   const [openReceipt, setOpenReceipt] = useState<{ url: string; name: string } | null>(null);
   const [shareUrl, setShareUrl] = useState(reportUrl);
   const [copiedShareUrl, setCopiedShareUrl] = useState(false);
+  const [copiedReminder, setCopiedReminder] = useState(false);
+  const [reminderInfo, setReminderInfo] = useState<string | null>(null);
   const [reportEnabled, setReportEnabled] = useState(publicReportEnabled);
   const [reportExpiresAt, setReportExpiresAt] = useState(publicReportExpiresAt);
   const [listQuery, setListQuery] = useState("");
@@ -166,6 +174,41 @@ export function CollectionPanel({
     return url.replace(/^\/uploads\/receipts\//, "/api/receipts/");
   }
 
+  async function sendReminder(sendEmail: boolean) {
+    setError(null);
+    setReminderInfo(null);
+    setLoading(true);
+    setLoadingLabel(sendEmail ? "Отправляем напоминания…" : "Готовим текст…");
+    try {
+      const res = await fetch(`/api/classes/${classId}/collections/${collectionId}/remind`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ sendEmail }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        setError(typeof data.error === "string" ? data.error : "Не удалось отправить напоминание");
+        return;
+      }
+      if (typeof data.chatMessage === "string") {
+        await navigator.clipboard.writeText(data.chatMessage);
+        setCopiedReminder(true);
+        window.setTimeout(() => setCopiedReminder(false), 2000);
+      }
+      const parts = [`Не сдали: ${data.unpaidCount ?? 0}`];
+      if (sendEmail) {
+        parts.push(`Email отправлено: ${data.emailsSent ?? 0}, пропущено: ${data.emailsSkipped ?? 0}`);
+        if (!data.smtpConfigured) parts.push("SMTP не настроен на сервере");
+      }
+      setReminderInfo(parts.join(" · "));
+      router.refresh();
+    } catch {
+      setError("Не удалось скопировать текст в буфер");
+    } finally {
+      setLoading(false);
+    }
+  }
+
   async function copyShareUrl() {
     try {
       await navigator.clipboard.writeText(shareUrl);
@@ -241,6 +284,45 @@ export function CollectionPanel({
         </div>
       </section>
 
+      {isViewer ? (
+        <p className="rounded-xl bg-stone-100 px-3 py-2 text-sm text-stone-600 dark:bg-stone-800">
+          У вас роль «только просмотр» — статусы видны, но чеки прикреплять нельзя.
+        </p>
+      ) : null}
+
+      {isCommittee ? (
+        <section className="rounded-2xl bg-white p-4 shadow-sm ring-1 ring-stone-200/80">
+          <h2 className="font-semibold text-stone-900">Напоминания</h2>
+          <p className="mt-1 text-sm text-stone-600">
+            Текст для чата копируется автоматически. Email — только тем, кто включил согласие в настройках класса.
+          </p>
+          {lastReminderAt ? (
+            <p className="mt-1 text-xs text-stone-500">
+              Последнее: {new Date(lastReminderAt).toLocaleString("ru-RU")}
+            </p>
+          ) : null}
+          <div className="mt-3 flex flex-wrap gap-2">
+            <button
+              type="button"
+              disabled={loading || unpaid.length === 0}
+              onClick={() => void sendReminder(false)}
+              className="min-h-10 rounded-lg border border-brand/40 bg-white px-3 py-2 text-sm font-medium text-brandDark"
+            >
+              {copiedReminder ? "✓ Скопировано в чат" : "Текст для чата"}
+            </button>
+            <button
+              type="button"
+              disabled={loading || unpaid.length === 0}
+              onClick={() => void sendReminder(true)}
+              className="min-h-10 rounded-lg border border-stone-300 px-3 py-2 text-sm"
+            >
+              + Email (с согласия)
+            </button>
+          </div>
+          {reminderInfo ? <p className="mt-2 text-xs text-stone-500">{reminderInfo}</p> : null}
+        </section>
+      ) : null}
+
       <label className="flex flex-col gap-1 text-sm">
         <span className="text-stone-600">Поиск по списку</span>
         <input
@@ -252,7 +334,7 @@ export function CollectionPanel({
         />
       </label>
 
-      {mine && !isCommittee ? (
+      {mine && canUploadReceipt && !isCommittee ? (
         <section className="rounded-2xl bg-white p-4 shadow-sm ring-1 ring-stone-200/80">
           <h2 className="font-semibold text-stone-900">Мой взнос</h2>
           <p className="mt-1 text-sm text-stone-600">
@@ -287,6 +369,11 @@ export function CollectionPanel({
               Открыть чек
             </button>
           ) : null}
+        </section>
+      ) : mine && isViewer ? (
+        <section className="rounded-2xl bg-white p-4 shadow-sm ring-1 ring-stone-200/80">
+          <h2 className="font-semibold text-stone-900">Мой взнос</h2>
+          <p className="mt-1 text-sm text-stone-600">Только просмотр — загрузка чека недоступна для вашей роли.</p>
         </section>
       ) : null}
 

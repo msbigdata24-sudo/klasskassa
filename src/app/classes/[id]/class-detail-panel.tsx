@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { MEMBER_ROLE_LABELS } from "@/lib/member-roles";
 import { formatRub } from "@/lib/money";
 import { SupportEventPing } from "@/components/support-events";
 
@@ -17,6 +18,12 @@ type Collection = {
   total: number;
 };
 type HistoryItem = { id: string; text: string; createdAt: string };
+
+const ADD_ROLES = [
+  { value: "PARENT", label: "Родитель (может прикреплять чек)" },
+  { value: "VIEWER", label: "Только просмотр" },
+  { value: "COMMITTEE", label: "Родком" },
+] as const;
 
 export function ClassDetailPanel({
   classId,
@@ -39,6 +46,7 @@ export function ClassDetailPanel({
   const router = useRouter();
   const [email, setEmail] = useState("");
   const [guestName, setGuestName] = useState("");
+  const [addRole, setAddRole] = useState<(typeof ADD_ROLES)[number]["value"]>("PARENT");
   const [error, setError] = useState<string | null>(null);
   const [collectionTitle, setCollectionTitle] = useState("");
   const [collectionAmount, setCollectionAmount] = useState("");
@@ -48,7 +56,9 @@ export function ClassDetailPanel({
     setError(null);
     setLoading(true);
     try {
-      const body = guestName.trim() ? { guestName: guestName.trim() } : { email: email.trim() };
+      const body = guestName.trim()
+        ? { guestName: guestName.trim(), role: addRole }
+        : { email: email.trim(), role: addRole };
       const res = await fetch(`/api/classes/${classId}/members`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -61,6 +71,26 @@ export function ClassDetailPanel({
       }
       setEmail("");
       setGuestName("");
+      router.refresh();
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function changeRole(userId: string, role: string) {
+    setError(null);
+    setLoading(true);
+    try {
+      const res = await fetch(`/api/classes/${classId}/members/${userId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ role }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        setError(typeof data.error === "string" ? data.error : "Не удалось сменить роль");
+        return;
+      }
       router.refresh();
     } finally {
       setLoading(false);
@@ -105,26 +135,49 @@ export function ClassDetailPanel({
       {isCommittee ? (
         <section className="rounded-2xl bg-white p-4 shadow-sm ring-1 ring-stone-200/80">
           <h2 className="font-semibold text-stone-900">Родители класса</h2>
-          <ul className="mt-2 space-y-1 text-sm">
+          <ul className="mt-2 space-y-2 text-sm">
             {members.map((m) => (
-              <li key={m.id} className="flex justify-between gap-2">
+              <li key={m.id} className="flex flex-col gap-1 border-b border-stone-100 pb-2 sm:flex-row sm:items-center sm:justify-between">
                 <span>
                   {m.name}
                   {m.isGuest ? <span className="text-stone-400"> (гость)</span> : null}
                 </span>
-                <span className="text-stone-500">{m.role === "COMMITTEE" ? "комитет" : "родитель"}</span>
+                <select
+                  value={m.role}
+                  disabled={loading}
+                  onChange={(e) => void changeRole(m.id, e.target.value)}
+                  className="min-h-9 rounded-lg border border-stone-300 px-2 py-1 text-xs"
+                  aria-label={`Роль: ${m.name}`}
+                >
+                  {ADD_ROLES.map((r) => (
+                    <option key={r.value} value={r.value}>
+                      {MEMBER_ROLE_LABELS[r.value]}
+                    </option>
+                  ))}
+                </select>
               </li>
             ))}
           </ul>
           <div className="mt-4 flex flex-col gap-2 border-t border-stone-100 pt-4">
-            <input
+            <select
+              value={addRole}
+              onChange={(e) => setAddRole(e.target.value as typeof addRole)}
               className="rounded-xl border border-stone-300 px-3 py-2 text-sm"
+            >
+              {ADD_ROLES.map((r) => (
+                <option key={r.value} value={r.value}>
+                  {r.label}
+                </option>
+              ))}
+            </select>
+            <input
+              className="min-h-11 rounded-xl border border-stone-300 px-3 py-2 text-sm"
               placeholder="Email родителя"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
             />
             <input
-              className="rounded-xl border border-stone-300 px-3 py-2 text-sm"
+              className="min-h-11 rounded-xl border border-stone-300 px-3 py-2 text-sm"
               placeholder="Или имя гостя (без email)"
               value={guestName}
               onChange={(e) => setGuestName(e.target.value)}
@@ -133,9 +186,9 @@ export function ClassDetailPanel({
               type="button"
               disabled={loading}
               onClick={() => void addMember()}
-              className="btn-soft-3d text-sm font-semibold"
+              className="btn-soft-3d min-h-11 text-sm font-semibold"
             >
-              Добавить родителя
+              Добавить участника
             </button>
           </div>
         </section>
@@ -146,20 +199,20 @@ export function ClassDetailPanel({
           <h2 className="font-semibold text-stone-900">Новый сбор</h2>
           <div className="mt-3 flex flex-col gap-2">
             <input
-              className="rounded-xl border border-stone-300 px-3 py-2 text-sm"
+              className="min-h-11 rounded-xl border border-stone-300 px-3 py-2 text-sm"
               placeholder="Название (например, Подарок учителю)"
               value={collectionTitle}
               onChange={(e) => setCollectionTitle(e.target.value)}
               required
             />
             <input
-              className="rounded-xl border border-stone-300 px-3 py-2 text-sm"
+              className="min-h-11 rounded-xl border border-stone-300 px-3 py-2 text-sm"
               placeholder="Сумма взноса, ₽"
               value={collectionAmount}
               onChange={(e) => setCollectionAmount(e.target.value)}
               required
             />
-            <button type="submit" disabled={loading} className="btn-soft-3d text-sm font-semibold">
+            <button type="submit" disabled={loading} className="btn-soft-3d min-h-11 text-sm font-semibold">
               Создать сбор
             </button>
           </div>

@@ -12,7 +12,7 @@ const schema = z
   .object({
     email: z.string().email().max(255).optional(),
     guestName: z.string().min(1).max(80).optional(),
-    role: z.enum(["PARENT", "COMMITTEE"]).optional(),
+    role: z.enum(["PARENT", "VIEWER", "COMMITTEE"]).optional(),
   })
   .refine((v) => Boolean(v.email) !== Boolean(v.guestName), {
     message: "Укажите либо email, либо имя гостя",

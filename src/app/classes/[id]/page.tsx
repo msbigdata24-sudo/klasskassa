@@ -5,6 +5,8 @@ import { getClassMembership } from "@/lib/class-access";
 import { isGuestEmail } from "@/lib/guest-user";
 import { prisma } from "@/lib/prisma";
 import { ClassDetailPanel } from "./class-detail-panel";
+import { EmailRemindersToggle } from "@/components/email-reminders-toggle";
+import { canOptInEmailReminders } from "@/lib/member-roles";
 
 type Props = { params: Promise<{ id: string }> };
 
@@ -50,6 +52,12 @@ export default async function ClassPage({ params }: Props) {
   if (!schoolClass) notFound();
 
   const isCommittee = membership.role === "COMMITTEE";
+  const roleHint =
+    membership.role === "COMMITTEE"
+      ? "Вы в родительском комитете"
+      : membership.role === "VIEWER"
+        ? "Роль: только просмотр (без загрузки чеков)"
+        : "Вы родитель в этом классе";
   const inviteUrl = `/invite/${schoolClass.inviteCode}`;
   const baseUrl = process.env.APP_BASE_URL ?? "";
 
@@ -78,10 +86,14 @@ export default async function ClassPage({ params }: Props) {
       </Link>
       <div>
         <h1 className="text-2xl font-bold text-stone-900">{schoolClass.name}</h1>
-        <p className="mt-1 text-sm text-stone-600">
-          {isCommittee ? "Вы в родительском комитете" : "Вы родитель в этом классе"}
-        </p>
+        <p className="mt-1 text-sm text-stone-600">{roleHint}</p>
       </div>
+      {canOptInEmailReminders(membership.role) ? (
+        <EmailRemindersToggle
+          classId={classId}
+          initialOptIn={membership.emailRemindersOptIn}
+        />
+      ) : null}
       <ClassDetailPanel
         classId={classId}
         isCommittee={isCommittee}

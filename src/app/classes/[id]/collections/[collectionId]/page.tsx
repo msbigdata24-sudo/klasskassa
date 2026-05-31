@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { getCurrentUser } from "@/lib/auth";
 import { getClassMembership } from "@/lib/class-access";
+import { canUploadOwnReceipt } from "@/lib/member-roles";
 import { isGuestEmail } from "@/lib/guest-user";
 import { formatRub } from "@/lib/money";
 import { prisma } from "@/lib/prisma";
@@ -26,6 +27,7 @@ export default async function CollectionPage({ params }: Props) {
       publicReportCode: true,
       publicReportEnabled: true,
       publicReportExpiresAt: true,
+      lastReminderAt: true,
       class: { select: { name: true } },
       contributions: {
         orderBy: { user: { name: "asc" } },
@@ -48,6 +50,8 @@ export default async function CollectionPage({ params }: Props) {
   if (!collection) notFound();
 
   const isCommittee = membership.role === "COMMITTEE";
+  const isViewer = membership.role === "VIEWER";
+  const canUploadReceipt = canUploadOwnReceipt(membership.role);
   const reportPath = `/report/${collection.publicReportCode}`;
 
   const contributions = collection.contributions.map((c) => ({
@@ -82,10 +86,13 @@ export default async function CollectionPage({ params }: Props) {
         classId={classId}
         collectionId={collectionId}
         isCommittee={isCommittee}
+        isViewer={isViewer}
+        canUploadReceipt={canUploadReceipt}
         currentUserId={user.id}
         reportUrl={reportPath}
         publicReportEnabled={collection.publicReportEnabled}
         publicReportExpiresAt={collection.publicReportExpiresAt?.toISOString() ?? null}
+        lastReminderAt={collection.lastReminderAt?.toISOString() ?? null}
         exportUrl={`/api/classes/${classId}/export?collectionId=${collectionId}`}
         exportCsvUrl={`/api/classes/${classId}/export?collectionId=${collectionId}&format=csv`}
         contributions={contributions}

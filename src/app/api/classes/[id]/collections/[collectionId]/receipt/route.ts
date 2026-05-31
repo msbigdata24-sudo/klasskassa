@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import sharp from "sharp";
 import { logActivity } from "@/lib/activity";
 import { getCurrentUser } from "@/lib/auth";
-import { getClassMembership, requireClassMembership } from "@/lib/class-access";
+import { canEditContributions, getClassMembership, requireClassMembership } from "@/lib/class-access";
 import { validateReceiptBuffer } from "@/lib/file-validation";
 import { prisma } from "@/lib/prisma";
 import { logServerError } from "@/lib/server-log";
@@ -80,6 +80,10 @@ export async function POST(req: Request, { params }: Params) {
   const file = form.get("file");
   const targetUserId = String(form.get("userId") ?? user.id);
   const isCommittee = membership.role === "COMMITTEE";
+
+  if (!canEditContributions(membership.role, targetUserId, user.id)) {
+    return NextResponse.json({ error: "Нет права прикреплять чек" }, { status: 403 });
+  }
 
   if (targetUserId !== user.id && !isCommittee) {
     return NextResponse.json({ error: "Чек можно прикрепить только к своему взносу" }, { status: 403 });

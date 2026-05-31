@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { LogoutButton } from "@/components/logout-button";
+import { ThemeToggle } from "@/components/theme-provider";
 
 type UserView = {
   id: string;
@@ -27,6 +28,7 @@ export function TopNav({ user, isMetricsAdmin = false }: { user: UserView | null
 
   return (
     <nav className="flex flex-wrap items-center justify-end gap-x-1 gap-y-1 text-sm text-stone-600">
+      <ThemeToggle />
       {user ? (
         <>
           <Link className={linkClass("/")} href="/">

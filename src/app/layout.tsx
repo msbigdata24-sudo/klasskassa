@@ -4,6 +4,7 @@ import Link from "next/link";
 import { getCurrentUser } from "@/lib/auth";
 import { isMetricsAdminEmail } from "@/lib/env";
 import { CookieConsent } from "@/components/cookie-consent";
+import { ThemeProvider } from "@/components/theme-provider";
 import { TopNav } from "@/components/top-nav";
 import { ToastProvider } from "@/components/toast-provider";
 import "./globals.css";
@@ -41,8 +42,16 @@ export default async function RootLayout({
   const isMetricsAdmin = user ? isMetricsAdminEmail(user.email) : false;
 
   return (
-    <html lang="ru">
+    <html lang="ru" suppressHydrationWarning>
+      <head>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `(function(){try{var t=localStorage.getItem('klasskassa-theme');if(t==='dark'||(t!=='light'&&window.matchMedia('(prefers-color-scheme: dark)').matches))document.documentElement.classList.add('dark')}catch(e){}})();`,
+          }}
+        />
+      </head>
       <body className={`${geistSans.className} font-sans`}>
+        <ThemeProvider>
         <ToastProvider>
           <div className="mx-auto flex min-h-screen max-w-lg flex-col px-4 pb-10 pt-6 sm:max-w-2xl">
             <header className="mb-8 flex flex-wrap items-center justify-between gap-3">
@@ -74,6 +83,7 @@ export default async function RootLayout({
           </div>
           <CookieConsent />
         </ToastProvider>
+        </ThemeProvider>
       </body>
     </html>
   );

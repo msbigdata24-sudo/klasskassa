@@ -3,6 +3,7 @@ import { z } from "zod";
 import { logActivity } from "@/lib/activity";
 import { getCurrentUser } from "@/lib/auth";
 import { getClassMembership, requireClassMembership } from "@/lib/class-access";
+import { canMarkOthers } from "@/lib/member-roles";
 import { prisma } from "@/lib/prisma";
 
 type Params = { params: Promise<{ id: string; collectionId: string }> };
@@ -32,9 +33,13 @@ export async function POST(req: Request, { params }: Params) {
   }
 
   const targetUserId = parsed.data.userId ?? user.id;
-  const isCommittee = membership.role === "COMMITTEE";
+  const isCommittee = canMarkOthers(membership.role);
 
-  if (targetUserId !== user.id && !isCommittee) {
+  if (membership.role === "VIEWER") {
+    return NextResponse.json({ error: "Роль «только просмотр» не может менять взносы" }, { status: 403 });
+  }
+
+  if (targetUserId !== user.id && !canMarkOthers(membership.role)) {
     return NextResponse.json({ error: "Нельзя отмечать взнос за другого родителя" }, { status: 403 });
   }
 

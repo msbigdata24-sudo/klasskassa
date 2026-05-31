@@ -10,6 +10,7 @@ datasource db {
 enum ClassMemberRole {
   COMMITTEE
   PARENT
+  VIEWER
 }
 
 model User {
@@ -54,12 +55,13 @@ model SchoolClass {
 }
 
 model ClassMember {
-  id      String          @id @default(cuid())
-  classId String
-  userId  String
-  role    ClassMemberRole @default(PARENT)
-  class   SchoolClass     @relation(fields: [classId], references: [id], onDelete: Cascade)
-  user    User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id                   String          @id @default(cuid())
+  classId              String
+  userId               String
+  role                 ClassMemberRole @default(PARENT)
+  emailRemindersOptIn  Boolean         @default(false) @map("email_reminders_opt_in")
+  class                SchoolClass     @relation(fields: [classId], references: [id], onDelete: Cascade)
+  user                 User            @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([classId, userId])
   @@map("class_members")
@@ -75,6 +77,7 @@ model Collection {
   publicReportCode      String    @unique @default(cuid())
   publicReportEnabled   Boolean   @default(true) @map("public_report_enabled")
   publicReportExpiresAt DateTime? @map("public_report_expires_at")
+  lastReminderAt        DateTime? @map("last_reminder_at")
   createdById      String
   createdAt        DateTime       @default(now())
   updatedAt        DateTime       @updatedAt

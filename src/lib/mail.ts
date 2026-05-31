@@ -1,5 +1,6 @@
 import nodemailer from "nodemailer";
 import { getMailFrom, getSmtpConfig } from "@/lib/env";
+import { formatRub } from "@/lib/money";
 
 type SendResult = { ok: true } | { ok: false; status: number; detail: string };
 
@@ -24,6 +25,52 @@ export async function sendPasswordResetEmail(to: string, resetUrl: string): Prom
       subject: "Сброс пароля — КлассКасса",
       text: `Сброс пароля КлассКасса. Ссылка (1 час): ${resetUrl}`,
       html,
+    });
+    return { ok: true };
+  } catch (e: unknown) {
+    const msg = e instanceof Error ? e.message : String(e);
+    return { ok: false, status: 502, detail: msg.slice(0, 500) };
+  }
+}
+
+export async function sendCollectionReminderEmail(
+  to: string,
+  input: {
+    parentName: string;
+    className: string;
+    collectionTitle: string;
+    amountCents: number;
+    reportUrl: string;
+  },
+): Promise<SendResult> {
+  const cfg = getSmtpConfig();
+  if (!cfg) {
+    return { ok: false, status: 500, detail: "SMTP не настроен" };
+  }
+  const fromHeader = getMailFrom() || cfg.user;
+  const transporter = nodemailer.createTransport({
+    host: cfg.host,
+    port: cfg.port,
+    secure: cfg.secure,
+    auth: { user: cfg.user, pass: cfg.pass },
+    tls: { minVersion: "TLSv1.2" as const },
+  });
+  const amount = formatRub(input.amountCents);
+  const text = [
+    `Здравствуйте, ${input.parentName}!`,
+    "",
+    `Напоминание: сбор «${input.collectionTitle}» в классе ${input.className}.`,
+    `Взнос: ${amount}.`,
+    `Отчёт: ${input.reportUrl}`,
+    "",
+    "Вы согласились получать такие письма в настройках класса. Отключить можно в КлассКассе.",
+  ].join("\n");
+  try {
+    await transporter.sendMail({
+      from: fromHeader,
+      to,
+      subject: `Напоминание о взносе — ${input.className}`,
+      text,
     });
     return { ok: true };
   } catch (e: unknown) {
